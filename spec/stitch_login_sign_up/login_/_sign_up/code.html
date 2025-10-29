@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>User Authentication</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#1E8449",
+              "background-light": "#f6f8f7",
+              "background-dark": "#122017",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col items-center bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden p-4">
+<div class="flex w-full max-w-md flex-col items-center justify-center space-y-6 py-8">
+<!-- App Logo -->
+<div class="flex items-center justify-center text-primary mb-4">
+<span class="material-symbols-outlined text-5xl">
+                    account_balance_wallet
+                </span>
+</div>
+<!-- Headline Text -->
+<h1 class="text-slate-900 dark:text-white tracking-tight text-[32px] font-bold leading-tight text-center">Welcome Back</h1>
+<!-- Segmented Buttons -->
+<div class="flex w-full px-4 py-3">
+<div class="flex h-12 flex-1 items-center justify-center rounded-lg bg-gray-200 dark:bg-black/20 p-1">
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-md px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-[#1b3124] has-[:checked]:shadow-sm has-[:checked]:text-slate-900 dark:has-[:checked]:text-white text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal transition-all">
+<span class="truncate">Log In</span>
+<input checked="" class="invisible w-0" name="auth-toggle" type="radio" value="Log In"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-md px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-[#1b3124] has-[:checked]:shadow-sm has-[:checked]:text-slate-900 dark:has-[:checked]:text-white text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal transition-all">
+<span class="truncate">Sign Up</span>
+<input class="invisible w-0" name="auth-toggle" type="radio" value="Sign Up"/>
+</label>
+</div>
+</div>
+<!-- Form Fields -->
+<div class="w-full space-y-4 px-4">
+<label class="flex flex-col flex-1">
+<p class="text-slate-700 dark:text-white text-sm font-medium leading-normal pb-2">Email Address</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-[#366348] bg-white dark:bg-[#1b3124] h-14 placeholder:text-gray-400 dark:placeholder:text-[#96c5a9] px-4 py-3 text-base font-normal leading-normal" placeholder="Enter your email" value=""/>
+</label>
+<label class="flex flex-col flex-1">
+<div class="flex justify-between items-center pb-2">
+<p class="text-slate-700 dark:text-white text-sm font-medium leading-normal">Password</p>
+<a class="text-primary text-sm font-medium hover:underline" href="#">Forgot Password?</a>
+</div>
+<div class="flex w-full flex-1 items-stretch rounded-lg">
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-[#366348] bg-white dark:bg-[#1b3124] h-14 placeholder:text-gray-400 dark:placeholder:text-[#96c5a9] p-4 rounded-r-none border-r-0 pr-2 text-base font-normal leading-normal" placeholder="Enter your password" type="password" value=""/>
+<div class="text-gray-400 dark:text-[#96c5a9] flex border border-gray-300 dark:border-[#366348] bg-white dark:bg-[#1b3124] items-center justify-center pr-4 rounded-r-lg border-l-0 cursor-pointer">
+<span class="material-symbols-outlined">visibility</span>
+</div>
+</div>
+</label>
+</div>
+<!-- Primary CTA -->
+<div class="w-full px-4 pt-2">
+<button class="flex h-14 w-full items-center justify-center rounded-lg bg-primary px-6 text-base font-medium text-white shadow-sm hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 dark:focus:ring-offset-background-dark">Log In</button>
+</div>
+<!-- Visual Separator -->
+<div class="flex w-full items-center gap-4 px-4 py-2">
+<hr class="w-full border-gray-200 dark:border-gray-700"/>
+<p class="text-sm font-medium text-gray-400 dark:text-gray-500">OR</p>
+<hr class="w-full border-gray-200 dark:border-gray-700"/>
+</div>
+<!-- Social Logins -->
+<div class="w-full space-y-4 px-4">
+<button class="flex h-14 w-full items-center justify-center gap-3 rounded-lg border border-gray-300 dark:border-[#366348] bg-white dark:bg-[#1b3124] px-6 text-base font-medium text-slate-800 dark:text-white shadow-sm hover:bg-gray-50 dark:hover:bg-white/5">
+<img alt="Google logo" class="h-6 w-6" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1xyaOVB3er3u6uMeDItdwRGeYrdCI-1mYrmyk_stlz6fOTcuySmgoVc_uNWXV2Xd0T9bBhE_nVOzS51olOkBtoB70qvVHWWwUmsWVO05a7vlfGcMDKSfXhVHtuNmAu36zRmS0hEMThKVPa_n-7Mk7XUPIOmqRlDH-UYN0bkGEA7jjXDnrq7mzsqyEV52NBhLBa_-YMJrOQQWnhrDCSZ7wOruHQES7aNaWg973XKYDeFfPVJEGHByzWfWcFV2_bxxem76u1YCaV1Ez"/>
+                    Continue with Google
+                </button>
+<button class="flex h-14 w-full items-center justify-center gap-3 rounded-lg border border-gray-300 dark:border-[#366348] bg-white dark:bg-[#1b3124] px-6 text-base font-medium text-slate-800 dark:text-white shadow-sm hover:bg-gray-50 dark:hover:bg-white/5">
+<svg class="h-6 w-6 dark:fill-white" fill="black" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><path d="M480.31,312.37C480,233.74,416.33,184,332.61,184c-53.48,0-89.4,32.43-113.62,32.43s-58.3-32.43-111.45-32.43c-84,0-149.2,50.21-149.2,130.49,0,84.OTQ1ZDE2OTItYTAzOC00OTU5LTliMTItZmM4MDU0OWUzODZh"></path></svg>
+                    Continue with Apple
+                </button>
+</div>
+<!-- Legal Text -->
+<div class="w-full px-4 pt-6 text-center">
+<p class="text-xs text-gray-500 dark:text-gray-400">
+                    By continuing, you agree to our 
+                    <a class="font-medium text-primary hover:underline" href="#">Terms of Service</a> and 
+                    <a class="font-medium text-primary hover:underline" href="#">Privacy Policy</a>.
+                </p>
+</div>
+</div>
+</div>
+</body></html>

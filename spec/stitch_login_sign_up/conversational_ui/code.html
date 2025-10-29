@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FinBot Chat</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#4CAF50", // Bright Green
+            "background-light": "#F5F5F5", // Off-White / Light Gray
+            "background-dark": "#1A237E", // Deep Blue / Navy
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "0.75rem",
+            "xl": "1rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display">
+<div class="relative flex h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-hidden">
+<!-- Top App Bar -->
+<div class="flex items-center bg-background-light dark:bg-background-dark p-4 shadow-md z-10">
+<div class="text-slate-800 dark:text-white flex size-12 shrink-0 items-center">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</div>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">FinBot</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 text-slate-800 dark:text-white gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0">
+<span class="material-symbols-outlined text-2xl">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Chat Log Area -->
+<div class="flex-1 overflow-y-auto p-4 space-y-6">
+<!-- Bot Welcome Message -->
+<div class="flex items-end gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 h-10 shrink-0 border-2 border-white dark:border-slate-700 shadow" data-alt="FinBot logo with a piggy bank icon" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBIaDkioAkl2p80dkENruBAXzvjdlxNTdnnTiJI0D21IIUKGTOm3prSS2JW97XhJGNtxGorLI6iMXPokR6JTwbhsZvQwa8yqvYnTc4EjhGG5F7XZE8sBij7EJgEiyn3lNa1LIJ5DWvUEu0NMTuL4F1b6k2CeBlEjS9UrJz8bTp78pnCdOb0HUBzUZ-4Zj3VuuDvNBWzRZ8Zlrj27krQIkViO0CEmsHo9DWHFzaVIux2kHA_FJsYLT2AjPzB43jXpZLX_zX5IXX6OWsI");'></div>
+<div class="flex flex-1 flex-col gap-1 items-start">
+<p class="text-gray-500 dark:text-blue-200 text-sm font-normal leading-normal max-w-[360px]">FinBot</p>
+<p class="text-base font-normal leading-normal flex max-w-[360px] rounded-lg rounded-bl-none px-4 py-3 bg-white dark:bg-[#283593] text-slate-800 dark:text-white shadow">Hi there! How can I help with your finances today?</p>
+</div>
+</div>
+<!-- User Message -->
+<div class="flex items-end gap-3 justify-end">
+<div class="flex flex-1 flex-col gap-1 items-end">
+<p class="text-gray-500 dark:text-blue-200 text-sm font-normal leading-normal max-w-[360px] text-right">You</p>
+<p class="text-base font-normal leading-normal flex max-w-[360px] rounded-lg rounded-br-none px-4 py-3 bg-[#E0E0E0] dark:bg-[#4CAF50] text-slate-900 dark:text-white shadow">How much did I spend on food last month?</p>
+</div>
+</div>
+<!-- Bot "Typing" Indicator -->
+<div class="flex items-end gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 h-10 shrink-0 border-2 border-white dark:border-slate-700 shadow" data-alt="FinBot logo with a piggy bank icon" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA0z40cSM2tQZ60bZvsnlzMZmY4FvvrKQuBBEHG0Pn4thZK20uRe-mOr7hEARQJ11MLywXWpYZqGuPDgAfU45rXYAt8qUhG0dIqc0_8rKOXGYHWZkYrgc1MxwK-_e4c8Fku4mKHmhYu95z0iQUxwkIXfH_CbKIVBm5eAEUtjU3Xm1zlBsmaUOzm4teecvjtqJgWT6M036iztEHKJVenCUY7bKiLFx8CfLXniCufGawb_wIZ5DBhpeThEGDs3JJ4axYkD4lMudhR2DnD");'></div>
+<div class="flex flex-1 flex-col gap-1 items-start">
+<div class="flex items-center space-x-1 rounded-lg rounded-bl-none px-4 py-3 bg-white dark:bg-[#283593] shadow">
+<div class="w-2 h-2 bg-gray-400 rounded-full animate-pulse [animation-delay:-0.3s]"></div>
+<div class="w-2 h-2 bg-gray-400 rounded-full animate-pulse [animation-delay:-0.15s]"></div>
+<div class="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
+</div>
+</div>
+</div>
+<!-- Bot Response with Data -->
+<div class="flex items-end gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 h-10 shrink-0 border-2 border-white dark:border-slate-700 shadow" data-alt="FinBot logo with a piggy bank icon" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDd7MkjUdhfGwZYniw7mmClOg9TFDBm7BjEwKnRTsR924q5QgC9Ro5KOJl-xbUs8Gz4c9fXsbcRz-IJAxaZ6ya9VMaox2MAOoo2dgv_e_JLUajL8I3IZm4vcruuI_x0zeIgiF8RcrCktpLZt7SoSD09livXp0U_hN1uSlTlqdRzRLqSsFbahdWgpN0bgB4NuzBK1xZD0rZIVncaUC5WmF_g4YhXitDKwTN15AAavi9pXyB8KPg0ztYr3Dkcb7HbmHFj88-Ld0L4IoGY");'></div>
+<div class="flex flex-1 flex-col gap-2 items-start max-w-sm">
+<p class="text-gray-500 dark:text-blue-200 text-sm font-normal leading-normal">FinBot</p>
+<div class="w-full space-y-2">
+<p class="text-base font-normal leading-normal flex rounded-lg rounded-bl-none px-4 py-3 bg-white dark:bg-[#283593] text-slate-800 dark:text-white shadow">You spent $485.50 on food last month. Here's a breakdown by category:</p>
+<!-- Data Visualization Card -->
+<div class="flex w-full flex-col gap-4 rounded-lg bg-white dark:bg-[#283593] p-4 shadow">
+<div class="flex flex-col gap-2">
+<p class="text-slate-800 dark:text-white text-base font-medium leading-normal">Food Spending Breakdown</p>
+<p class="text-slate-800 dark:text-white tracking-light text-3xl font-bold leading-tight truncate">$485.50</p>
+<div class="flex gap-1 items-center">
+<p class="text-gray-500 dark:text-blue-200 text-sm font-normal leading-normal">vs. previous month</p>
+<p class="text-red-500 dark:text-red-400 text-sm font-medium leading-normal flex items-center gap-1">
+<span class="material-symbols-outlined text-base">arrow_upward</span>
+                    12%
+                  </p>
+</div>
+</div>
+<div class="flex flex-col gap-3">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900 flex items-center justify-center">
+<span class="material-symbols-outlined text-green-600 dark:text-green-300">shopping_cart</span>
+</div>
+<div class="flex-1">
+<p class="text-slate-800 dark:text-white font-medium">Groceries</p>
+<p class="text-gray-500 dark:text-blue-200 text-sm">$320.00</p>
+</div>
+<p class="font-bold text-slate-900 dark:text-white">$320.00</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
+<span class="material-symbols-outlined text-orange-600 dark:text-orange-300">restaurant</span>
+</div>
+<div class="flex-1">
+<p class="text-slate-800 dark:text-white font-medium">Restaurants</p>
+<p class="text-gray-500 dark:text-blue-200 text-sm">$165.50</p>
+</div>
+<p class="font-bold text-slate-900 dark:text-white">$165.50</p>
+</div>
+</div>
+<button class="w-full text-center py-2 px-4 rounded-lg bg-primary/20 dark:bg-primary/30 text-primary font-semibold text-sm hover:bg-primary/30 dark:hover:bg-primary/40 transition-colors">View All Transactions</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Input Area -->
+<div class="bg-background-light dark:bg-background-dark p-4 pt-2 border-t border-gray-200 dark:border-gray-700">
+<!-- Quick Actions Chips -->
+<div class="mb-3">
+<div class="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4" style="scrollbar-width: none; -ms-overflow-style: none;">
+<style>
+            .hide-scrollbar::-webkit-scrollbar {
+              display: none;
+            }
+          </style>
+<button class="shrink-0 text-sm font-medium py-2 px-4 rounded-full bg-gray-200 dark:bg-[#283593] text-slate-700 dark:text-blue-100 hover:bg-gray-300 dark:hover:bg-indigo-800 transition-colors">Last month's spending</button>
+<button class="shrink-0 text-sm font-medium py-2 px-4 rounded-full bg-gray-200 dark:bg-[#283593] text-slate-700 dark:text-blue-100 hover:bg-gray-300 dark:hover:bg-indigo-800 transition-colors">Top categories</button>
+<button class="shrink-0 text-sm font-medium py-2 px-4 rounded-full bg-gray-200 dark:bg-[#283593] text-slate-700 dark:text-blue-100 hover:bg-gray-300 dark:hover:bg-indigo-800 transition-colors">Am I over budget?</button>
+<button class="shrink-0 text-sm font-medium py-2 px-4 rounded-full bg-gray-200 dark:bg-[#283593] text-slate-700 dark:text-blue-100 hover:bg-gray-300 dark:hover:bg-indigo-800 transition-colors">Upcoming bills</button>
+</div>
+</div>
+<!-- Text Input Field and Send Button -->
+<div class="flex items-center gap-3">
+<input class="flex-1 w-full rounded-full border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-[#283593] py-3 px-5 text-slate-800 dark:text-white placeholder-gray-500 dark:placeholder-blue-200 focus:ring-primary focus:border-primary transition" placeholder="Ask about your spending..." type="text"/>
+<button class="flex items-center justify-center w-12 h-12 rounded-full bg-primary text-white hover:bg-green-600 active:bg-green-700 transition-colors shrink-0">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>

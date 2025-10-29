@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Transactions - Personal Finance App</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#38e07b",
+              "background-light": "#f6f8f7",
+              "background-dark": "#122017",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative min-h-screen w-full mx-auto max-w-md">
+<!-- Main Content -->
+<main class="flex flex-col">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-10 flex h-16 items-center justify-between bg-background-light/80 px-4 backdrop-blur-sm dark:bg-background-dark/80">
+<div class="flex h-12 w-12 items-center">
+<!-- Placeholder for menu or back button if needed -->
+</div>
+<h1 class="text-lg font-bold text-slate-800 dark:text-white">Transactions</h1>
+<div class="flex h-12 w-12 items-center justify-end">
+<button class="flex h-10 w-10 items-center justify-center rounded-full text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-700">
+<span class="material-symbols-outlined text-2xl">tune</span>
+</button>
+</div>
+</header>
+<!-- Transactions List -->
+<div class="flex-1 space-y-2 px-4 pb-28">
+<!-- List Item 1: Income -->
+<div class="flex items-center gap-4 rounded-xl bg-white p-3 shadow-sm dark:bg-slate-800/50 min-h-[72px]">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
+<span class="material-symbols-outlined text-2xl">work</span>
+</div>
+<div class="flex flex-1 flex-col justify-center">
+<p class="text-base font-medium text-slate-800 dark:text-white line-clamp-1">Salary</p>
+<p class="text-sm font-normal text-slate-500 dark:text-slate-400 line-clamp-2">Oct 26</p>
+</div>
+<div class="shrink-0">
+<p class="text-base font-medium text-green-500 dark:text-green-400">+$2,500.00</p>
+</div>
+</div>
+<!-- List Item 2: Expense -->
+<div class="flex items-center gap-4 rounded-xl bg-white p-3 shadow-sm dark:bg-slate-800/50 min-h-[72px]">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
+<span class="material-symbols-outlined text-2xl">shopping_cart</span>
+</div>
+<div class="flex flex-1 flex-col justify-center">
+<p class="text-base font-medium text-slate-800 dark:text-white line-clamp-1">Groceries</p>
+<p class="text-sm font-normal text-slate-500 dark:text-slate-400 line-clamp-2">Oct 26</p>
+</div>
+<div class="shrink-0">
+<p class="text-base font-medium text-slate-700 dark:text-slate-300">-$54.30</p>
+</div>
+</div>
+<!-- List Item 3: Expense -->
+<div class="flex items-center gap-4 rounded-xl bg-white p-3 shadow-sm dark:bg-slate-800/50 min-h-[72px]">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
+<span class="material-symbols-outlined text-2xl">lightbulb</span>
+</div>
+<div class="flex flex-1 flex-col justify-center">
+<p class="text-base font-medium text-slate-800 dark:text-white line-clamp-1">Utilities</p>
+<p class="text-sm font-normal text-slate-500 dark:text-slate-400 line-clamp-2">Oct 25</p>
+</div>
+<div class="shrink-0">
+<p class="text-base font-medium text-slate-700 dark:text-slate-300">-$120.00</p>
+</div>
+</div>
+<!-- List Item 4: Income -->
+<div class="flex items-center gap-4 rounded-xl bg-white p-3 shadow-sm dark:bg-slate-800/50 min-h-[72px]">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
+<span class="material-symbols-outlined text-2xl">laptop_mac</span>
+</div>
+<div class="flex flex-1 flex-col justify-center">
+<p class="text-base font-medium text-slate-800 dark:text-white line-clamp-1">Freelance Project</p>
+<p class="text-sm font-normal text-slate-500 dark:text-slate-400 line-clamp-2">Oct 24</p>
+</div>
+<div class="shrink-0">
+<p class="text-base font-medium text-green-500 dark:text-green-400">+$800.00</p>
+</div>
+</div>
+<!-- Empty State (Uncomment to view) -->
+<!-- 
+                <div class="flex flex-col items-center justify-center pt-24 text-center">
+                    <span class="material-symbols-outlined text-7xl text-slate-400 dark:text-slate-500">receipt_long</span>
+                    <h3 class="mt-4 text-xl font-semibold text-slate-800 dark:text-white">No Transactions Yet</h3>
+                    <p class="mt-2 text-slate-500 dark:text-slate-400">Add your first transaction to get started.</p>
+                </div>
+                -->
+</div>
+</main>
+<!-- Floating Action Button -->
+<div class="fixed bottom-6 right-6 z-20">
+<button class="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-background-dark shadow-lg transition-transform hover:scale-105 active:scale-95">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</div>
+<!-- Transaction Form Modal (Hidden by default) -->
+<div class="fixed inset-0 z-30 flex items-end bg-black/50 backdrop-blur-sm hidden">
+<div class="w-full rounded-t-xl bg-background-light p-4 pt-3 shadow-2xl dark:bg-background-dark">
+<!-- Modal Handle -->
+<div class="mx-auto mb-4 h-1.5 w-12 rounded-full bg-slate-300 dark:bg-slate-600"></div>
+<!-- Modal Header -->
+<div class="mb-4 flex items-center justify-between">
+<h2 class="text-xl font-bold text-slate-800 dark:text-white">New Transaction</h2>
+<button class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+<span class="material-symbols-outlined text-xl">close</span>
+</button>
+</div>
+<!-- Form Content -->
+<form class="space-y-4">
+<!-- Income/Expense Toggle -->
+<div class="grid grid-cols-2 gap-2 rounded-lg bg-slate-200 p-1 dark:bg-slate-800">
+<button class="rounded-md bg-white py-2 text-sm font-semibold text-slate-800 shadow-sm dark:bg-slate-700 dark:text-white" type="button">Expense</button>
+<button class="py-2 text-sm font-semibold text-slate-500 dark:text-slate-400" type="button">Income</button>
+</div>
+<!-- Amount -->
+<div>
+<label class="mb-1 block text-sm font-medium text-slate-600 dark:text-slate-400" for="amount">Amount</label>
+<div class="relative">
+<span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">$</span>
+<input class="w-full rounded-lg border-slate-300 bg-white pl-7 pr-4 py-2 shadow-sm focus:border-primary focus:ring-primary dark:border-slate-600 dark:bg-slate-900/50 dark:text-white dark:focus:border-primary dark:focus:ring-primary" id="amount" name="amount" placeholder="0.00" type="text"/>
+</div>
+</div>
+<!-- Category -->
+<div>
+<label class="mb-1 block text-sm font-medium text-slate-600 dark:text-slate-400" for="category">Category</label>
+<select class="w-full rounded-lg border-slate-300 bg-white py-2 shadow-sm focus:border-primary focus:ring-primary dark:border-slate-600 dark:bg-slate-900/50 dark:text-white dark:focus:border-primary dark:focus:ring-primary" id="category" name="category">
+<option>Groceries</option>
+<option>Utilities</option>
+<option>Salary</option>
+<option>Freelance</option>
+</select>
+</div>
+<!-- Date -->
+<div>
+<label class="mb-1 block text-sm font-medium text-slate-600 dark:text-slate-400" for="date">Date</label>
+<input class="w-full rounded-lg border-slate-300 bg-white py-2 shadow-sm focus:border-primary focus:ring-primary dark:border-slate-600 dark:bg-slate-900/50 dark:text-white dark:focus:border-primary dark:focus:ring-primary" id="date" name="date" type="date" value="2023-10-27"/>
+</div>
+<!-- Notes -->
+<div>
+<label class="mb-1 block text-sm font-medium text-slate-600 dark:text-slate-400" for="notes">Notes</label>
+<textarea class="w-full rounded-lg border-slate-300 bg-white py-2 shadow-sm focus:border-primary focus:ring-primary dark:border-slate-600 dark:bg-slate-900/50 dark:text-white dark:focus:border-primary dark:focus:ring-primary" id="notes" name="notes" placeholder="Optional" rows="2"></textarea>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-3 pt-2">
+<!-- Delete button for "Edit" mode -->
+<!-- <button type="button" class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-red-500/50 text-red-500 hover:bg-red-500/10">
+                            <span class="material-symbols-outlined">delete</span>
+                        </button> -->
+<button class="w-full rounded-xl bg-primary py-3 text-base font-bold text-background-dark" type="submit">Save Transaction</button>
+</div>
+</form>
+</div>
+</div>
+</div>
+</body></html>
