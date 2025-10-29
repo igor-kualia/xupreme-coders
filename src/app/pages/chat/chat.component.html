@@ -83,12 +83,26 @@
             } @else {
               <div class="flex w-full justify-start">
                 <div class="max-w-[85%]">
-                  <div
-                    class="prose text-sm"
-                    [innerHTML]="
-                      getRenderedMarkdown(getDisplayContent(message._id, message.content))
-                    "
-                  ></div>
+                  @for (
+                    segment of parseMessageSegments(
+                      message._id,
+                      getDisplayContent(message._id, message.content)
+                    );
+                    track $index
+                  ) {
+                    @if (segment.type === 'text') {
+                      <div
+                        class="prose text-sm"
+                        [innerHTML]="getRenderedMarkdown(segment.content)"
+                      ></div>
+                    } @else if (segment.type === 'component' && segment.command) {
+                      @if (segment.command.type === 'transaction-table') {
+                        <app-chat-transaction-table
+                          [transactionIds]="segment.command.data.transactionIds"
+                        />
+                      }
+                    }
+                  }
                 </div>
               </div>
             }
