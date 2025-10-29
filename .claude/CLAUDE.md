@@ -1,4 +1,96 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 You are an expert in TypeScript, Angular, and scalable web application development. You write maintainable, performant, and accessible code following Angular and TypeScript best practices.
+
+## Project Overview
+
+XupremeCoders is an Angular 20 application built with:
+- **Angular 20.3** with zoneless change detection (`provideZonelessChangeDetection`)
+- **Tailwind CSS 4.1** for styling with custom theme using oklch color space
+- **Spartan UI (@spartan-ng/brain)** for UI components
+- **TypeScript 5.9** with strict mode enabled
+- **Standalone components** architecture (NgModules not used)
+- **Signals-based** state management
+
+## Development Commands
+
+### Running the Application
+```bash
+npm start              # Start development server on http://localhost:4200
+ng serve              # Alternative command
+npm run watch         # Build in watch mode for development
+```
+
+### Testing
+```bash
+npm test              # Run tests (headless Chrome, no watch)
+ng test               # Interactive test mode with watch
+ng test --no-watch --no-progress --browsers=ChromeHeadless  # CI mode
+```
+
+### Code Quality
+```bash
+npm run lint          # Run ESLint
+npm run lint:fix      # Auto-fix linting issues
+npm run format:check  # Check Prettier formatting
+npm run format        # Auto-format with Prettier
+npm run check         # Run all checks (format, lint, test, build)
+```
+
+### Building
+```bash
+npm run build         # Production build (output in dist/)
+ng build              # Same as above
+```
+
+### Code Generation
+```bash
+ng generate component component-name    # Generate component
+ng generate service service-name        # Generate service
+ng generate --help                      # See all available schematics
+```
+
+## Architecture
+
+### Application Bootstrap
+- Entry point: `src/main.ts`
+- App config: `src/app/app.config.ts` with zoneless change detection and global error listeners
+- Root component: `src/app/app.ts` (App class)
+- Routing: `src/app/app.routes.ts`
+
+### Styling System
+- **Tailwind CSS 4.1** with PostCSS configuration (`.postcssrc.json`)
+- Global styles in `src/styles.css` with custom CSS layers (theme, base, components, utilities)
+- Design tokens using CSS custom properties with oklch color space
+- Light/dark theme support via `:root` and `:root.dark` classes
+- Roboto font family with variable font settings
+- Spartan UI components with `hlm-tailwind-preset.css`
+
+### TypeScript Configuration
+- Strict mode enabled with additional strict flags:
+  - `noImplicitOverride`, `noPropertyAccessFromIndexSignature`
+  - `noImplicitReturns`, `noFallthroughCasesInSwitch`
+- Target: ES2022
+- Experimental decorators enabled
+- Angular strict templates and injection parameters
+
+### Linting & Formatting
+- **ESLint** with angular-eslint, typescript-eslint
+- **Prettier** with plugins:
+  - `prettier-plugin-organize-imports` (auto-organizes imports)
+  - `prettier-plugin-tailwindcss` (sorts Tailwind classes)
+- Angular parser for HTML templates
+- Component selector prefix: `app-` (kebab-case)
+- Directive selector prefix: `app` (camelCase)
+- Print width: 100 characters, single quotes
+
+### Testing
+- **Jasmine** test framework
+- **Karma** test runner with Chrome/ChromeHeadless
+- Coverage reports enabled
+- Test files: `tsconfig.spec.json` for test-specific configuration
 
 ## TypeScript Best Practices
 
