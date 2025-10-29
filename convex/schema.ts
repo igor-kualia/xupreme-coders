@@ -130,11 +130,35 @@ export default defineSchema({
     .index('by_userId_globalMerchantId', ['userId', 'globalMerchantId'])
     .index('by_userId_name', ['userId', 'name']),
 
+  // Merchant category mapping table - caches LLM categorization results
+  merchantCategoryMapping: defineTable({
+    merchantName: v.string(), // Normalized merchant name
+    categoryId: v.id('category'), // Reference to category
+    userId: v.string(), // User ID
+    source: v.union(v.literal('llm'), v.literal('manual')), // How mapping was created
+    confidence: v.optional(v.number()), // LLM confidence score (0-1)
+    timesApplied: v.number(), // Number of times this mapping was used
+    timesOverridden: v.number(), // Number of times user changed this categorization
+    createdAt: v.optional(v.string()), // ISO timestamp
+    updatedAt: v.optional(v.string()), // ISO timestamp
+  })
+    .index('by_userId', ['userId'])
+    .index('by_userId_merchantName', ['userId', 'merchantName']),
+
   // Transaction table - core transaction records
   transaction: defineTable({
     amount: v.int64(), // Transaction amount in cents (negative for expenses)
     bankAccountId: v.id('bankAccount'), // Reference to bank account
     categoryId: v.optional(v.id('category')), // Reference to category
+    categorizationStatus: v.optional(
+      v.union(
+        v.literal('pending'), // Waiting for categorization
+        v.literal('categorizing'), // Currently being categorized by LLM
+        v.literal('categorized'), // Successfully categorized
+        v.literal('failed'), // Categorization failed
+        v.literal('manual'), // Manually categorized by user
+      ),
+    ),
     date: v.string(), // Transaction date (ISO string)
     merchantId: v.optional(v.id('merchant')), // Reference to merchant
     userId: v.string(), // User ID from authentication
@@ -155,5 +179,6 @@ export default defineSchema({
     .index('by_userId_merchantId', ['userId', 'merchantId'])
     .index('by_userId_categoryId', ['userId', 'categoryId'])
     .index('by_userId_bankAccountId', ['userId', 'bankAccountId'])
-    .index('by_userId_date', ['userId', 'date']),
+    .index('by_userId_date', ['userId', 'date'])
+    .index('by_userId_categorizationStatus', ['userId', 'categorizationStatus']),
 });
