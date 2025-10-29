@@ -95,18 +95,36 @@ export class ConvexService implements OnDestroy {
     args?: Record<string, unknown>,
   ): { subscribe: (callback: (value: T | undefined) => void) => () => void } {
     const subscribe = (callback: (value: T | undefined) => void) => {
-      const unsubscribe = this.client.onUpdate(
-        query,
-        args ?? {},
-        (value: T) => {
-          callback(value);
-        },
-        (error) => {
-          console.error('Query error:', error);
-          callback(undefined);
-        },
-      ) as () => void;
-      return unsubscribe;
+      let unsubscribeFn: (() => void) | null = null;
+
+      // Wait for auth to be set up before subscribing
+      this.ensureAuth().then(() => {
+        unsubscribeFn = this.client.onUpdate(
+          query,
+          args ?? {},
+          (value: T) => {
+            callback(value);
+          },
+          (error) => {
+            console.error('Query error:', error);
+            callback(undefined);
+          },
+        ) as () => void;
+        // Store unsubscribe for cleanup
+        this.querySubscriptions.push(unsubscribeFn);
+      });
+
+      // Return a function that will unsubscribe when called
+      return () => {
+        if (unsubscribeFn) {
+          unsubscribeFn();
+          // Remove from tracked subscriptions
+          const index = this.querySubscriptions.indexOf(unsubscribeFn);
+          if (index > -1) {
+            this.querySubscriptions.splice(index, 1);
+          }
+        }
+      };
     };
 
     return { subscribe };
@@ -122,20 +140,23 @@ export class ConvexService implements OnDestroy {
   query<T>(query: any, args?: Record<string, unknown>): Signal<T | undefined> {
     const resultSignal = signal<T | undefined>(undefined);
 
-    const unsubscribe = this.client.onUpdate(
-      query,
-      args ?? {},
-      (value: T) => {
-        resultSignal.set(value);
-      },
-      (error) => {
-        console.error('Query error:', error);
-        resultSignal.set(undefined);
-      },
-    ) as () => void;
+    // Wait for auth to be set up before subscribing
+    this.ensureAuth().then(() => {
+      const unsubscribe = this.client.onUpdate(
+        query,
+        args ?? {},
+        (value: T) => {
+          resultSignal.set(value);
+        },
+        (error) => {
+          console.error('Query error:', error);
+          resultSignal.set(undefined);
+        },
+      ) as () => void;
 
-    // Track subscription for cleanup
-    this.querySubscriptions.push(unsubscribe);
+      // Track subscription for cleanup
+      this.querySubscriptions.push(unsubscribe);
+    });
 
     return resultSignal.asReadonly();
   }

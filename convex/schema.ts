@@ -181,4 +181,33 @@ export default defineSchema({
     .index('by_userId_bankAccountId', ['userId', 'bankAccountId'])
     .index('by_userId_date', ['userId', 'date'])
     .index('by_userId_categorizationStatus', ['userId', 'categorizationStatus']),
+
+  // Chat message table - stores chatbot conversation history
+  chatMessage: defineTable({
+    userId: v.string(), // User ID from authentication
+    role: v.union(v.literal('user'), v.literal('assistant')), // Message sender
+    content: v.string(), // Message text content
+    toolCalls: v.optional(
+      v.array(
+        v.object({
+          id: v.string(), // Tool call ID
+          name: v.string(), // Tool name
+          input: v.any(), // Tool input parameters
+        }),
+      ),
+    ), // Tool calls made by assistant
+    toolResults: v.optional(
+      v.array(
+        v.object({
+          toolCallId: v.string(), // Corresponding tool call ID
+          result: v.any(), // Tool execution result
+          isError: v.optional(v.boolean()), // Whether execution failed
+        }),
+      ),
+    ), // Results from tool executions
+    timestamp: v.string(), // ISO timestamp
+    createdAt: v.string(), // ISO timestamp
+  })
+    .index('by_userId', ['userId'])
+    .index('by_userId_timestamp', ['userId', 'timestamp']),
 });

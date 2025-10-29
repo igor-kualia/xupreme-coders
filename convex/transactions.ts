@@ -4,7 +4,7 @@
 
 import { v } from 'convex/values';
 import { query } from './_generated/server';
-import { Doc } from './_generated/dataModel';
+import { Doc, Id } from './_generated/dataModel';
 
 /**
  * Extended transaction type with populated merchant and category
@@ -144,7 +144,9 @@ export const listTransactions = query({
         }
 
         // Populate bank account
-        const bankAccount = await ctx.db.get(transaction.bankAccountId);
+        const bankAccount = (await ctx.db.get(
+          transaction.bankAccountId,
+        )) as Doc<'bankAccount'> | null;
         if (bankAccount) {
           details.bankAccount = {
             _id: bankAccount._id,
@@ -226,7 +228,7 @@ export const getTransaction = query({
       }
     }
 
-    const bankAccount = await ctx.db.get(transaction.bankAccountId);
+    const bankAccount = (await ctx.db.get(transaction.bankAccountId)) as Doc<'bankAccount'> | null;
     if (bankAccount) {
       details.bankAccount = {
         _id: bankAccount._id,
@@ -311,5 +313,116 @@ export const getTransactionSummary = query({
         Object.entries(merchantTotals).map(([k, v]) => [k, Number(v)]),
       ),
     };
+  },
+});
+
+/**
+ * Gets multiple transactions by their IDs
+ * Used by chat to display specific transactions
+ * Accepts strings to handle potentially invalid/stale IDs from chat history
+ */
+export const getTransactionsByIds = query({
+  args: {
+    transactionIds: v.array(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error('Unauthenticated');
+    }
+
+    const userId = identity.subject;
+
+    // Fetch all transactions by ID, handling invalid IDs gracefully
+    const transactions = await Promise.all(
+      args.transactionIds.map(async (id) => {
+        try {
+          // Attempt to get the transaction - this may fail if ID is invalid
+          const transaction = (await ctx.db.get(
+            id as Id<'transaction'>,
+          )) as Doc<'transaction'> | null;
+          if (!transaction) return null;
+
+          // Verify ownership
+          if (transaction.userId !== userId) {
+            return null;
+          }
+
+          // Skip deleted transactions
+          if (transaction.isDeleted) {
+            return null;
+          }
+
+          return transaction;
+        } catch {
+          // Invalid ID format or doesn't exist - skip it
+          return null;
+        }
+      }),
+    );
+
+    // Filter out null values
+    const validTransactions = transactions.filter((t): t is Doc<'transaction'> => t !== null);
+
+    // Populate merchant and category details
+    const transactionsWithDetails: TransactionWithDetails[] = await Promise.all(
+      validTransactions.map(async (transaction) => {
+        const details: TransactionWithDetails = { ...transaction };
+
+        // Populate merchant
+        if (transaction.merchantId) {
+          const merchant = await ctx.db.get(transaction.merchantId);
+          if (merchant) {
+            // Get merchant name (from custom or global)
+            let merchantName = merchant.name;
+            let merchantLogoUrl = merchant.logoUrl ?? undefined;
+
+            if (merchant.globalMerchantId && !merchantName) {
+              const globalMerchant = await ctx.db.get(merchant.globalMerchantId);
+              if (globalMerchant) {
+                merchantName = globalMerchant.name;
+                if (!merchantLogoUrl) {
+                  merchantLogoUrl = globalMerchant.logoUrl;
+                }
+              }
+            }
+
+            details.merchant = {
+              _id: merchant._id,
+              name: merchantName || 'Unknown Merchant',
+              logoUrl: merchantLogoUrl,
+            };
+          }
+        }
+
+        // Populate category
+        if (transaction.categoryId) {
+          const category = await ctx.db.get(transaction.categoryId);
+          if (category) {
+            details.category = {
+              _id: category._id,
+              name: category.name,
+              iconName: category.iconName,
+            };
+          }
+        }
+
+        // Populate bank account
+        const bankAccount = (await ctx.db.get(
+          transaction.bankAccountId,
+        )) as Doc<'bankAccount'> | null;
+        if (bankAccount) {
+          details.bankAccount = {
+            _id: bankAccount._id,
+            name: bankAccount.name,
+            accountType: bankAccount.accountType,
+          };
+        }
+
+        return details;
+      }),
+    );
+
+    return transactionsWithDetails;
   },
 });
