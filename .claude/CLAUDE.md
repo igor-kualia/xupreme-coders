@@ -52,6 +52,24 @@ ng generate service service-name        # Generate service
 ng generate --help                      # See all available schematics
 ```
 
+## Development Workflow
+
+**IMPORTANT: After making significant changes, ALWAYS run the following checks:**
+
+```bash
+npm run format        # Auto-format code with Prettier
+npm run lint          # Check for linting issues
+npm run build         # Verify the build succeeds
+```
+
+Or run all checks at once:
+
+```bash
+npm run check         # Run format check, lint, test, and build
+```
+
+This ensures code quality and prevents build failures before committing changes.
+
 ## Architecture
 
 ### Application Bootstrap
@@ -137,3 +155,5 @@ ng generate --help                      # See all available schematics
 - Design services around a single responsibility
 - Use the `providedIn: 'root'` option for singleton services
 - Use the `inject()` function instead of constructor injection
+- No comments in html.
+- Use inject() instead of constructor

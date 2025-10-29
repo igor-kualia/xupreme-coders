@@ -1,6 +1,7 @@
 import { Component, signal, inject, afterNextRender, ChangeDetectionStrategy } from '@angular/core';
 import { PlaidService } from '../../services/plaid.service';
 import { AuthService } from '../../services/auth.service';
+import { BankAccountsTableComponent } from '../../components/bank-accounts-table/bank-accounts-table.component';
 
 type ConnectionState = 'idle' | 'loading' | 'plaid-open' | 'processing' | 'success' | 'error';
 
@@ -10,6 +11,7 @@ type ConnectionState = 'idle' | 'loading' | 'plaid-open' | 'processing' | 'succe
  */
 @Component({
   selector: 'app-dashboard',
+  imports: [BankAccountsTableComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -80,7 +82,7 @@ export class DashboardComponent {
 
             this.connectionState.set('success');
             this.successMessage.set(
-              `Successfully linked ${result.accounts.length} account(s) from ${metadata.institution?.name || 'your bank'}!`
+              `Successfully linked ${result.accounts.length} account(s) from ${metadata.institution?.name || 'your bank'}!`,
             );
 
             // Cleanup
@@ -94,7 +96,7 @@ export class DashboardComponent {
           } catch (error) {
             this.connectionState.set('error');
             this.errorMessage.set(
-              error instanceof Error ? error.message : 'Failed to link bank account'
+              error instanceof Error ? error.message : 'Failed to link bank account',
             );
             this.plaidService.destroy();
           }
@@ -111,7 +113,7 @@ export class DashboardComponent {
           }
 
           this.plaidService.destroy();
-        }
+        },
       );
 
       // Open Plaid Link

@@ -1,4 +1,4 @@
-import { AuthConfig } from "convex/server";
+import { AuthConfig } from 'convex/server';
 
 /**
  * Auth0 configuration for Convex backend
@@ -11,8 +11,8 @@ import { AuthConfig } from "convex/server";
 export default {
   providers: [
     {
-      domain: `https://${process.env["AUTH0_DOMAIN"] || "dev-yjz445wxd3w30hb0.us.auth0.com"}/`,
-      applicationID: process.env["AUTH0_CLIENT_ID"] || "ZnG3Xc9nJ4Pw4xIFvJR1lgLvF5nfgoIR",
+      domain: `https://${process.env['AUTH0_DOMAIN'] || 'dev-yjz445wxd3w30hb0.us.auth0.com'}/`,
+      applicationID: process.env['AUTH0_CLIENT_ID'] || 'ZnG3Xc9nJ4Pw4xIFvJR1lgLvF5nfgoIR',
     },
   ],
 } satisfies AuthConfig;
@@ -20,10 +20,10 @@ export default {
 // Helper config object for use in auth.ts (for access tokens if needed)
 export const auth0Config = {
   // Your Auth0 domain (e.g., 'your-tenant.auth0.com')
-  domain: process.env["AUTH0_DOMAIN"] || "dev-yjz445wxd3w30hb0.us.auth0.com",
+  domain: process.env['AUTH0_DOMAIN'] || 'dev-yjz445wxd3w30hb0.us.auth0.com',
 
   // Your Auth0 API audience identifier (for access tokens)
-  audience: process.env["AUTH0_AUDIENCE"] || "https://api.xupreme-coders.com",
+  audience: process.env['AUTH0_AUDIENCE'] || 'https://api.xupreme-coders.com',
 
   // JWKS URI for fetching Auth0 public keys
   get jwksUri() {

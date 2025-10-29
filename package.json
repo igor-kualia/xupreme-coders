@@ -47,6 +47,7 @@
     "convex": "^1.28.0",
     "embla-carousel-angular": ">=19.0.0",
     "jwks-rsa": "^3.2.0",
+    "lucide": "^0.548.0",
     "ngx-sonner": ">=3.0.0",
     "plaid": "^35.0.0",
     "postcss": "^8.5.6",
@@ -65,6 +66,7 @@
     "@types/jasmine": "~5.1.0",
     "@types/node": "^24.9.2",
     "angular-eslint": "20.5.0",
+    "cypress": "15.5.0",
     "eslint": "^9.38.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
@@ -78,7 +80,6 @@
     "prettier-plugin-organize-imports": "^4.3.0",
     "prettier-plugin-tailwindcss": "^0.7.1",
     "typescript": "~5.9.2",
-    "typescript-eslint": "8.46.1",
-    "cypress": "15.5.0"
+    "typescript-eslint": "8.46.1"
   }
 }

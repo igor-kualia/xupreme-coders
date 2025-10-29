@@ -1,4 +1,4 @@
-"use node";
+'use node';
 
 import { action } from '../../_generated/server';
 import { internal } from '../../_generated/api';
@@ -54,10 +54,13 @@ export const linkNewPlaidItem = action({
         mask: v.union(v.string(), v.null()),
         type: v.string(),
         subtype: v.union(v.string(), v.null()),
-      })
+      }),
     ),
   },
-  handler: async (ctx, args): Promise<{
+  handler: async (
+    ctx,
+    args,
+  ): Promise<{
     success: boolean;
     bankLinkId: any;
     accounts: Array<{ id: any; name: string; type: string }>;
@@ -130,13 +133,16 @@ export const linkNewPlaidItem = action({
 
     // Step 5: Upsert global institution
     console.log('Upserting global institution...');
-    const globalInstitutionId = await ctx.runMutation(internal.internal.institutions.upsertInstitution, {
-      providerInstitutionId: institutionData.institution_id,
-      provider: 'Plaid',
-      name: institutionData.name,
-      logoUrl,
-      primaryColor: institutionData.primary_color ?? undefined,
-    });
+    const globalInstitutionId = await ctx.runMutation(
+      internal.internal.institutions.upsertInstitution,
+      {
+        providerInstitutionId: institutionData.institution_id,
+        provider: 'Plaid',
+        name: institutionData.name,
+        logoUrl,
+        primaryColor: institutionData.primary_color ?? undefined,
+      },
+    );
     console.log('Global institution upserted:', globalInstitutionId);
 
     // Step 6: Create bank link
@@ -172,19 +178,22 @@ export const linkNewPlaidItem = action({
           ? Math.floor(plaidAccount.balances.available * 100) * balanceMultiplier
           : undefined;
 
-        const bankAccountId = await ctx.runMutation(internal.internal.bankAccounts.createBankAccount, {
-          accountNumberMask: plaidAccount.mask ?? undefined,
-          accountType: mapPlaidAccountType(plaidAccount.type, plaidAccount.subtype),
-          availableBalance: availableBalanceInCents,
-          currentBalance: currentBalanceInCents,
-          initialBalance: currentBalanceInCents,
-          bankLinkId,
-          globalInstitutionId,
-          name: plaidAccount.name,
-          officialName: plaidAccount.official_name ?? undefined,
-          plaidAccountId: plaidAccount.account_id,
-          userId,
-        });
+        const bankAccountId = await ctx.runMutation(
+          internal.internal.bankAccounts.createBankAccount,
+          {
+            accountNumberMask: plaidAccount.mask ?? undefined,
+            accountType: mapPlaidAccountType(plaidAccount.type, plaidAccount.subtype),
+            availableBalance: availableBalanceInCents,
+            currentBalance: currentBalanceInCents,
+            initialBalance: currentBalanceInCents,
+            bankLinkId,
+            globalInstitutionId,
+            name: plaidAccount.name,
+            officialName: plaidAccount.official_name ?? undefined,
+            plaidAccountId: plaidAccount.account_id,
+            userId,
+          },
+        );
 
         createdAccounts.push({
           id: bankAccountId,

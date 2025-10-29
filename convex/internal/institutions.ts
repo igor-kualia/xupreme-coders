@@ -26,7 +26,7 @@ export const upsertInstitution = internalMutation({
     const existing = await ctx.db
       .query('globalInstitution')
       .withIndex('by_provider_providerInstitutionId', (q) =>
-        q.eq('provider', args.provider).eq('providerInstitutionId', args.providerInstitutionId)
+        q.eq('provider', args.provider).eq('providerInstitutionId', args.providerInstitutionId),
       )
       .first();
 

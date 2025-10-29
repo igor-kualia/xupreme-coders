@@ -18,12 +18,12 @@ export * from './lib/hlm-autocomplete-trigger';
 export * from './lib/hlm-autocomplete.token';
 
 export const HlmAutocompleteImports = [
-	HlmAutocomplete,
-	HlmAutocompleteEmpty,
-	HlmAutocompleteGroup,
-	HlmAutocompleteItem,
-	HlmAutocompleteList,
-	HlmAutocompleteSearch,
-	HlmAutocompleteSearchInput,
-	HlmAutocompleteTrigger,
+  HlmAutocomplete,
+  HlmAutocompleteEmpty,
+  HlmAutocompleteGroup,
+  HlmAutocompleteItem,
+  HlmAutocompleteList,
+  HlmAutocompleteSearch,
+  HlmAutocompleteSearchInput,
+  HlmAutocompleteTrigger,
 ] as const;

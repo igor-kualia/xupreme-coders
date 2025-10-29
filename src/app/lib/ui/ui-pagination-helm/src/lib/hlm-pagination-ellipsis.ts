@@ -6,21 +6,23 @@ import { hlm } from '@spartan-ng/helm/utils';
 import type { ClassValue } from 'clsx';
 
 @Component({
-	selector: 'hlm-pagination-ellipsis',
-	imports: [NgIcon, HlmIcon],
-	providers: [provideIcons({ lucideEllipsis })],
-	template: `
-		<span [class]="_computedClass()">
-			<ng-icon hlm size="sm" name="lucideEllipsis" />
-			<span class="sr-only">{{ srOnlyText() }}</span>
-		</span>
-	`,
-	changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'hlm-pagination-ellipsis',
+  imports: [NgIcon, HlmIcon],
+  providers: [provideIcons({ lucideEllipsis })],
+  template: `
+    <span [class]="_computedClass()">
+      <ng-icon hlm size="sm" name="lucideEllipsis" />
+      <span class="sr-only">{{ srOnlyText() }}</span>
+    </span>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HlmPaginationEllipsis {
-	public readonly userClass = input<ClassValue>('', { alias: 'class' });
-	/** Screen reader only text for the ellipsis */
-	public readonly srOnlyText = input<string>('More pages');
+  public readonly userClass = input<ClassValue>('', { alias: 'class' });
+  /** Screen reader only text for the ellipsis */
+  public readonly srOnlyText = input<string>('More pages');
 
-	protected readonly _computedClass = computed(() => hlm('flex size-9 items-center justify-center', this.userClass()));
+  protected readonly _computedClass = computed(() =>
+    hlm('flex size-9 items-center justify-center', this.userClass()),
+  );
 }
