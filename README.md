@@ -38,7 +38,7 @@ This will compile your project and store the build artifacts in the `dist/` dire
 
 ## Running unit tests
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+To execute the unit tests, use the following command. By default, this project may use [Karma](https://karma-runner.github.io) or [Vitest](https://vitest.dev/) as the test runner.
 
 ```bash
 ng test
