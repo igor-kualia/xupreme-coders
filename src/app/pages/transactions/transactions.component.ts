@@ -3,10 +3,11 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TransactionsService } from '../../services/transactions.service';
 import { BankAccountsService } from '../../services/bank-accounts.service';
+import { HlmSkeleton } from '../../lib/ui/ui-skeleton-helm/src';
 
 @Component({
   selector: 'app-transactions',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, HlmSkeleton],
   template: `
     <div class="container mx-auto p-6" (scroll)="onScroll($event)">
       <!-- Header -->
@@ -146,6 +147,11 @@ import { BankAccountsService } from '../../services/bank-accounts.service';
                         >
                           {{ transaction.category.name }}
                         </span>
+                      } @else if (
+                        transaction.categorizationStatus === 'pending' ||
+                        transaction.categorizationStatus === 'categorizing'
+                      ) {
+                        <hlm-skeleton class="h-5 w-24" />
                       } @else {
                         <span class="text-sm text-muted-foreground">Uncategorized</span>
                       }

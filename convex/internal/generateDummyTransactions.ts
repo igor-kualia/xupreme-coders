@@ -6,6 +6,7 @@ import { v } from 'convex/values';
 import { internalMutation } from '../_generated/server';
 import { MerchantConfig, transactionConfig } from '../config/transactions.config';
 import { Id } from '../_generated/dataModel';
+import { internal } from '../_generated/api';
 
 /**
  * Generates a random integer between min and max (inclusive)
@@ -59,34 +60,6 @@ function randomDate(startDate: Date, endDate: Date): Date {
   const endTime = endDate.getTime();
   const randomTime = startTime + Math.random() * (endTime - startTime);
   return new Date(randomTime);
-}
-
-/**
- * Finds or creates a system category by name
- */
-async function findOrCreateCategory(
-  ctx: { db: any },
-  categoryName: string,
-): Promise<Id<'category'> | undefined> {
-  // Find system category by name
-  const category = await ctx.db
-    .query('category')
-    .withIndex('by_isSystemCategory', (q: any) => q.eq('isSystemCategory', true))
-    .filter((q: any) => q.eq(q.field('name'), categoryName))
-    .first();
-
-  if (category) {
-    return category._id;
-  }
-
-  // If not found, try to find uncategorized
-  const uncategorized = await ctx.db
-    .query('category')
-    .withIndex('by_isSystemCategory', (q: any) => q.eq('isSystemCategory', true))
-    .filter((q: any) => q.eq(q.field('name'), 'Uncategorized'))
-    .first();
-
-  return uncategorized?._id;
 }
 
 /**
@@ -219,20 +192,18 @@ export const generateDummyTransactions = internalMutation({
         // Generate random date
         const transactionDate = randomDate(startDate, endDate);
 
-        // Find or create category
-        const categoryId = await findOrCreateCategory(ctx, merchantConfig.category);
-
         // Find or create global merchant
         const globalMerchantId = await findOrCreateGlobalMerchant(ctx, merchantConfig.name);
 
         // Find or create user merchant
         const merchantId = await findOrCreateUserMerchant(ctx, userId, globalMerchantId);
 
-        // Create transaction record
+        // Create transaction record (categoryId will be set by LLM categorization)
         transactionsToInsert.push({
           amount: BigInt(amount),
           bankAccountId,
-          categoryId,
+          categoryId: undefined, // Will be set by LLM categorization
+          categorizationStatus: 'pending' as const, // Waiting for categorization
           date: transactionDate.toISOString().split('T')[0], // YYYY-MM-DD
           merchantId,
           userId,
@@ -267,6 +238,23 @@ export const generateDummyTransactions = internalMutation({
       await ctx.db.patch(bankAccountId, {
         transactionsStatus: 'completed',
       });
+
+      // Seed user categories first (if they don't exist)
+      console.log('Seeding user categories...');
+      await ctx.scheduler.runAfter(0, internal.internal.seedUserCategories.seedUserCategories, {
+        userId,
+      });
+
+      // Trigger LLM categorization for the generated transactions (after a short delay to ensure categories are created)
+      console.log('Scheduling LLM categorization...');
+      await ctx.scheduler.runAfter(
+        2000, // 2 second delay to ensure categories are seeded first
+        internal.categorization.categorizeTransactions.categorizeTransactions,
+        {
+          userId,
+          bankAccountId,
+        },
+      );
 
       return {
         message: 'Successfully generated transactions',

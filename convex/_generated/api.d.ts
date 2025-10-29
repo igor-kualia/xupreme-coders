@@ -13,11 +13,18 @@ import type * as bankAccounts from "../bankAccounts.js";
 import type * as bankProviders_plaid_createLinkToken from "../bankProviders/plaid/createLinkToken.js";
 import type * as bankProviders_plaid_linkNewPlaidItem from "../bankProviders/plaid/linkNewPlaidItem.js";
 import type * as bankProviders_plaid_plaidClient from "../bankProviders/plaid/plaidClient.js";
+import type * as categorization_categorizeTransactions from "../categorization/categorizeTransactions.js";
+import type * as categorization_helpers from "../categorization/helpers.js";
+import type * as categorization_llm from "../categorization/llm.js";
+import type * as categorization_manualTriggers from "../categorization/manualTriggers.js";
+import type * as devUtils from "../devUtils.js";
 import type * as internal_bankAccounts from "../internal/bankAccounts.js";
 import type * as internal_bankLinks from "../internal/bankLinks.js";
+import type * as internal_clearAllData from "../internal/clearAllData.js";
 import type * as internal_generateDummyTransactions from "../internal/generateDummyTransactions.js";
 import type * as internal_institutions from "../internal/institutions.js";
 import type * as internal_seedData from "../internal/seedData.js";
+import type * as internal_seedUserCategories from "../internal/seedUserCategories.js";
 import type * as transactions from "../transactions.js";
 
 import type {
@@ -40,11 +47,18 @@ declare const fullApi: ApiFromModules<{
   "bankProviders/plaid/createLinkToken": typeof bankProviders_plaid_createLinkToken;
   "bankProviders/plaid/linkNewPlaidItem": typeof bankProviders_plaid_linkNewPlaidItem;
   "bankProviders/plaid/plaidClient": typeof bankProviders_plaid_plaidClient;
+  "categorization/categorizeTransactions": typeof categorization_categorizeTransactions;
+  "categorization/helpers": typeof categorization_helpers;
+  "categorization/llm": typeof categorization_llm;
+  "categorization/manualTriggers": typeof categorization_manualTriggers;
+  devUtils: typeof devUtils;
   "internal/bankAccounts": typeof internal_bankAccounts;
   "internal/bankLinks": typeof internal_bankLinks;
+  "internal/clearAllData": typeof internal_clearAllData;
   "internal/generateDummyTransactions": typeof internal_generateDummyTransactions;
   "internal/institutions": typeof internal_institutions;
   "internal/seedData": typeof internal_seedData;
+  "internal/seedUserCategories": typeof internal_seedUserCategories;
   transactions: typeof transactions;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
