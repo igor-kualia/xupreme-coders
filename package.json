@@ -37,6 +37,7 @@
     "@spartan-ng/brain": "^0.0.1-alpha.538",
     "@tailwindcss/postcss": "^4.1.16",
     "convex": "^1.28.0",
+    "plaid": "^35.0.0",
     "postcss": "^8.5.6",
     "rxjs": "~7.8.0",
     "tailwindcss": "^4.1.16",

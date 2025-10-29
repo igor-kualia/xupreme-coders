@@ -54,6 +54,47 @@ ng e2e
 
 Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
 
+## Plaid Integration
+
+This project uses [Plaid](https://plaid.com/) for financial account connections via [Convex](https://www.convex.dev/) backend functions.
+
+### Setting up Plaid Environment Variables
+
+Before using Plaid features, you need to configure the following environment variables in your Convex deployment:
+
+1. **Via Convex Dashboard:**
+   - Go to https://dashboard.convex.dev/
+   - Select your deployment
+   - Navigate to Settings → Environment Variables
+   - Add the following variables:
+     - `PLAID_CLIENT_ID`: Your Plaid client ID
+     - `PLAID_SECRET`: Your Plaid secret key
+     - `PLAID_ENV`: `sandbox`, `development`, or `production`
+
+2. **Via Convex CLI:**
+   ```bash
+   npx convex env set PLAID_CLIENT_ID your_client_id_here
+   npx convex env set PLAID_SECRET your_secret_here
+   npx convex env set PLAID_ENV sandbox
+   ```
+
+### Getting Plaid Credentials
+
+1. Sign up for a free Plaid account at https://dashboard.plaid.com/signup
+2. Get your `client_id` and `secret` from the Plaid Dashboard under Team Settings → Keys
+3. For testing, use the **Sandbox** environment credentials
+
+### Plaid Sandbox Test Credentials
+
+When using Plaid Link in Sandbox mode, use these test credentials:
+- **Username:** `user_good`
+- **Password:** `pass_good`
+- **MFA Code:** `1234` (if prompted)
+
+### Available Convex Functions
+
+- `createLinkToken({ userId: string })` - Creates a Plaid Link token for initializing Plaid Link on the frontend
+
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.

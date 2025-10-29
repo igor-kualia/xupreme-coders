@@ -8,6 +8,13 @@
  * @module
  */
 
+import type * as bankProviders_plaid_createLinkToken from "../bankProviders/plaid/createLinkToken.js";
+import type * as bankProviders_plaid_linkNewPlaidItem from "../bankProviders/plaid/linkNewPlaidItem.js";
+import type * as bankProviders_plaid_plaidClient from "../bankProviders/plaid/plaidClient.js";
+import type * as internal_bankAccounts from "../internal/bankAccounts.js";
+import type * as internal_bankLinks from "../internal/bankLinks.js";
+import type * as internal_institutions from "../internal/institutions.js";
+
 import type {
   ApiFromModules,
   FilterApi,
@@ -22,7 +29,14 @@ import type {
  * const myFunctionReference = api.myModule.myFunction;
  * ```
  */
-declare const fullApi: ApiFromModules<{}>;
+declare const fullApi: ApiFromModules<{
+  "bankProviders/plaid/createLinkToken": typeof bankProviders_plaid_createLinkToken;
+  "bankProviders/plaid/linkNewPlaidItem": typeof bankProviders_plaid_linkNewPlaidItem;
+  "bankProviders/plaid/plaidClient": typeof bankProviders_plaid_plaidClient;
+  "internal/bankAccounts": typeof internal_bankAccounts;
+  "internal/bankLinks": typeof internal_bankLinks;
+  "internal/institutions": typeof internal_institutions;
+}>;
 declare const fullApiWithMounts: typeof fullApi;
 
 export declare const api: FilterApi<
