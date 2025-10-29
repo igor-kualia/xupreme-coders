@@ -1,1 +1,142 @@
-<p>Welcome to Xupreme Coders!</p>
+<div class="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+  <div class="w-full max-w-md space-y-6 rounded-lg bg-white p-8 shadow-lg">
+    <div class="text-center">
+      <h1 class="text-3xl font-bold text-gray-900">Welcome to Xupreme Coders!</h1>
+      <p class="mt-2 text-gray-600">Connect your bank account with Plaid</p>
+    </div>
+
+    <div class="space-y-4">
+      <!-- Idle State -->
+      @if (connectionState() === 'idle') {
+        <button
+          (click)="linkBank()"
+          class="w-full rounded-md bg-blue-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+          Link Bank Account
+        </button>
+      }
+
+      <!-- Loading State -->
+      @if (connectionState() === 'loading') {
+        <div class="flex items-center justify-center space-x-2 rounded-md bg-blue-50 px-4 py-3">
+          <svg
+            class="h-5 w-5 animate-spin text-blue-600"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+          <span class="font-medium text-blue-900">Initializing Plaid...</span>
+        </div>
+      }
+
+      <!-- Plaid Open State -->
+      @if (connectionState() === 'plaid-open') {
+        <div class="rounded-md bg-blue-50 px-4 py-3">
+          <p class="text-center font-medium text-blue-900">Complete the steps in the Plaid modal</p>
+        </div>
+      }
+
+      <!-- Processing State -->
+      @if (connectionState() === 'processing') {
+        <div class="flex items-center justify-center space-x-2 rounded-md bg-blue-50 px-4 py-3">
+          <svg
+            class="h-5 w-5 animate-spin text-blue-600"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+          <span class="font-medium text-blue-900">Processing your accounts...</span>
+        </div>
+      }
+
+      <!-- Success State -->
+      @if (connectionState() === 'success') {
+        <div class="rounded-md bg-green-50 px-4 py-3">
+          <div class="flex items-start">
+            <svg
+              class="h-5 w-5 text-green-400"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            <div class="ml-3">
+              <p class="text-sm font-medium text-green-800">{{ successMessage() }}</p>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Error State -->
+      @if (connectionState() === 'error') {
+        <div class="space-y-3">
+          <div class="rounded-md bg-red-50 px-4 py-3">
+            <div class="flex items-start">
+              <svg
+                class="h-5 w-5 text-red-400"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <div class="ml-3">
+                <p class="text-sm font-medium text-red-800">{{ errorMessage() }}</p>
+              </div>
+            </div>
+          </div>
+          <button
+            (click)="retry()"
+            class="w-full rounded-md bg-red-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+          >
+            Try Again
+          </button>
+        </div>
+      }
+
+      <!-- Debug Info -->
+      <div class="rounded-md bg-gray-50 p-4 text-xs text-gray-600">
+        <p class="font-semibold">Debug Info:</p>
+        <p>User ID: {{ userId() }}</p>
+        <p>State: {{ connectionState() }}</p>
+      </div>
+    </div>
+  </div>
+</div>

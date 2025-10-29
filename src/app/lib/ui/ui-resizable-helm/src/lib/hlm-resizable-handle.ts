@@ -1,6 +1,5 @@
-import { ClassValue } from 'class-variance-authority/dist/types';
-
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import type { ClassValue } from 'clsx';
 
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideGripVertical } from '@ng-icons/lucide';
