@@ -1,8 +1,11 @@
+"use node";
+
 import { action } from '../../_generated/server';
 import { internal } from '../../_generated/api';
 import { v } from 'convex/values';
 import { CountryCode } from 'plaid';
 import { plaidClient } from './plaidClient';
+import { getAuthenticatedUserId } from '../../auth';
 
 /**
  * Maps Plaid account types to internal account type strings.
@@ -31,12 +34,12 @@ function mapPlaidAccountType(type: string | null, subtype: string | null): strin
  * Links a new Plaid item after the user completes Plaid Link.
  * This action exchanges the public token for an access token, fetches account details,
  * stores institution information, and creates bank link and account records.
+ * Requires authentication - uses the authenticated user's ID from the JWT token.
  *
  * @param publicToken - The public token from Plaid Link
  * @param institutionId - The Plaid institution ID
  * @param institutionName - The institution name
  * @param accounts - Array of account metadata from Plaid Link
- * @param userId - The user ID from authentication
  * @returns Object with success status and created bankLinkId
  */
 export const linkNewPlaidItem = action({
@@ -53,14 +56,15 @@ export const linkNewPlaidItem = action({
         subtype: v.union(v.string(), v.null()),
       })
     ),
-    userId: v.string(),
   },
   handler: async (ctx, args): Promise<{
     success: boolean;
     bankLinkId: any;
     accounts: Array<{ id: any; name: string; type: string }>;
   }> => {
-    console.log('Starting linkNewPlaidItem for user:', args.userId);
+    // Get authenticated user ID from JWT token
+    const userId = await getAuthenticatedUserId(ctx);
+    console.log('Starting linkNewPlaidItem for user:', userId);
 
     let accessToken: string;
     let itemId: string;
@@ -142,7 +146,7 @@ export const linkNewPlaidItem = action({
       globalInstitutionId,
       itemId,
       itemStatus: 'Healthy',
-      userId: args.userId,
+      userId,
       provider: 'plaid',
     });
     console.log('Bank link created:', bankLinkId);
@@ -179,7 +183,7 @@ export const linkNewPlaidItem = action({
           name: plaidAccount.name,
           officialName: plaidAccount.official_name ?? undefined,
           plaidAccountId: plaidAccount.account_id,
-          userId: args.userId,
+          userId,
         });
 
         createdAccounts.push({

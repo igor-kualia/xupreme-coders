@@ -1,3 +1,5 @@
+"use node";
+
 import { Configuration, PlaidApi, PlaidEnvironments } from 'plaid';
 
 // Log environment configuration for debugging
