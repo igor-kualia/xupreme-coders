@@ -32,77 +32,77 @@ export const transactionConfig: TransactionGeneratorConfig = {
     {
       name: 'Whole Foods Market',
       category: 'Groceries',
-      amountRange: { min: 3500, max: 15000 }, // $35-$150
-      frequency: 2.0,
+      amountRange: { min: -15000, max: -3500 }, // $35-$150
+      frequency: 1.0, // ~2-3 times per month
     },
     {
       name: 'Trader Joes',
       category: 'Groceries',
-      amountRange: { min: 2500, max: 8000 }, // $25-$80
-      frequency: 2.0,
+      amountRange: { min: -8000, max: -2500 }, // $25-$80
+      frequency: 1.0, // ~2-3 times per month
     },
     {
       name: 'Safeway',
       category: 'Groceries',
-      amountRange: { min: 4000, max: 12000 }, // $40-$120
-      frequency: 1.5,
+      amountRange: { min: -12000, max: -4000 }, // $40-$120
+      frequency: 0.8, // ~2 times per month
     },
 
     // Restaurants & Dining
     {
       name: 'Starbucks',
       category: 'Coffee Shops',
-      amountRange: { min: 500, max: 1500 }, // $5-$15
-      frequency: 3.0,
+      amountRange: { min: -1500, max: -500 }, // $5-$15
+      frequency: 3.5,
     },
     {
       name: 'Chipotle Mexican Grill',
       category: 'Restaurants',
-      amountRange: { min: 1200, max: 2500 }, // $12-$25
-      frequency: 1.5,
+      amountRange: { min: -2500, max: -1200 }, // $12-$25
+      frequency: 2.0,
     },
     {
       name: 'Panera Bread',
       category: 'Restaurants',
-      amountRange: { min: 1000, max: 2000 }, // $10-$20
-      frequency: 1.0,
+      amountRange: { min: -2000, max: -1000 }, // $10-$20
+      frequency: 1.5,
     },
     {
       name: 'The Cheesecake Factory',
       category: 'Restaurants',
-      amountRange: { min: 4000, max: 10000 }, // $40-$100
-      frequency: 0.5,
+      amountRange: { min: -10000, max: -4000 }, // $40-$100
+      frequency: 0.6,
     },
     {
       name: 'Olive Garden',
       category: 'Restaurants',
-      amountRange: { min: 3500, max: 7500 }, // $35-$75
-      frequency: 0.5,
+      amountRange: { min: -7500, max: -3500 }, // $35-$75
+      frequency: 0.6,
     },
 
     // Gas & Transportation
     {
       name: 'Shell',
       category: 'Gas',
-      amountRange: { min: 4000, max: 7500 }, // $40-$75
-      frequency: 2.0,
+      amountRange: { min: -7500, max: -4000 }, // $40-$75
+      frequency: 2.5,
     },
     {
       name: 'Chevron',
       category: 'Gas',
-      amountRange: { min: 4500, max: 8000 }, // $45-$80
-      frequency: 1.5,
+      amountRange: { min: -8000, max: -4500 }, // $45-$80
+      frequency: 2.0,
     },
     {
       name: 'Uber',
       category: 'Transportation',
-      amountRange: { min: 1500, max: 4500 }, // $15-$45
+      amountRange: { min: -4500, max: -1500 }, // $15-$45
       frequency: 1.0,
     },
     {
       name: 'Lyft',
       category: 'Transportation',
-      amountRange: { min: 1200, max: 4000 }, // $12-$40
+      amountRange: { min: -4000, max: -1200 }, // $12-$40
       frequency: 0.8,
     },
 
@@ -110,77 +110,119 @@ export const transactionConfig: TransactionGeneratorConfig = {
     {
       name: 'Amazon',
       category: 'Shopping',
-      amountRange: { min: 1500, max: 20000 }, // $15-$200
-      frequency: 3.0,
+      amountRange: { min: -20000, max: -1500 }, // $15-$200
+      frequency: 3.5,
     },
     {
       name: 'Target',
       category: 'Shopping',
-      amountRange: { min: 2500, max: 15000 }, // $25-$150
-      frequency: 1.5,
+      amountRange: { min: -15000, max: -2500 }, // $25-$150
+      frequency: 2.0,
     },
     {
       name: 'Walmart',
       category: 'Shopping',
-      amountRange: { min: 3000, max: 12000 }, // $30-$120
-      frequency: 1.0,
+      amountRange: { min: -12000, max: -3000 }, // $30-$120
+      frequency: 1.5,
     },
     {
       name: 'Apple Store',
       category: 'Electronics',
-      amountRange: { min: 5000, max: 150000 }, // $50-$1500
+      amountRange: { min: -150000, max: -5000 }, // $50-$1500
       frequency: 0.3,
     },
     {
       name: 'Best Buy',
       category: 'Electronics',
-      amountRange: { min: 7500, max: 100000 }, // $75-$1000
+      amountRange: { min: -100000, max: -7500 }, // $75-$1000
       frequency: 0.4,
     },
 
-    // Utilities & Bills
+    // Housing & Utilities (Monthly recurring bills - higher frequency to ensure ~1/month)
     {
-      name: 'PG&E',
-      category: 'Utilities',
-      amountRange: { min: 8000, max: 20000 }, // $80-$200
-      frequency: 0.5,
+      name: 'Rent Payment',
+      category: 'Rent',
+      amountRange: { min: -250000, max: -150000 }, // $1500-$2500
+      frequency: 2.5, // Guaranteed monthly rent
     },
     {
-      name: 'Comcast',
-      category: 'Internet & Cable',
-      amountRange: { min: 7000, max: 15000 }, // $70-$150
-      frequency: 0.5,
+      name: 'PG&E - Electricity & Gas',
+      category: 'Utilities',
+      amountRange: { min: -15000, max: -8000 }, // $80-$150
+      frequency: 2.5, // Guaranteed monthly
+    },
+    {
+      name: 'Water Bill',
+      category: 'Utilities',
+      amountRange: { min: -8000, max: -3000 }, // $30-$80
+      frequency: 2.5, // Guaranteed monthly
+    },
+    {
+      name: 'Comcast Internet',
+      category: 'Internet',
+      amountRange: { min: -10000, max: -6000 }, // $60-$100
+      frequency: 2.5, // Guaranteed monthly
+    },
+    {
+      name: 'Cable TV - Comcast',
+      category: 'Cable',
+      amountRange: { min: -12000, max: -7000 }, // $70-$120
+      frequency: 1.5, // Monthly for some users
     },
     {
       name: 'AT&T Wireless',
       category: 'Phone',
-      amountRange: { min: 6000, max: 12000 }, // $60-$120
-      frequency: 0.5,
+      amountRange: { min: -12000, max: -6000 }, // $60-$120
+      frequency: 2.5, // Guaranteed monthly
+    },
+    {
+      name: 'Verizon Wireless',
+      category: 'Phone',
+      amountRange: { min: -11000, max: -6500 }, // $65-$110
+      frequency: 0.5, // Alternative phone provider (not everyone)
+    },
+    {
+      name: 'T-Mobile',
+      category: 'Phone',
+      amountRange: { min: -10000, max: -5000 }, // $50-$100
+      frequency: 0.5, // Alternative phone provider (not everyone)
+    },
+    {
+      name: 'Renters Insurance',
+      category: 'Insurance',
+      amountRange: { min: -4000, max: -1500 }, // $15-$40
+      frequency: 2.0, // Monthly for most users
+    },
+    {
+      name: 'Car Insurance',
+      category: 'Insurance',
+      amountRange: { min: -20000, max: -10000 }, // $100-$200
+      frequency: 2.5, // Guaranteed monthly
     },
 
     // Entertainment & Subscriptions
     {
       name: 'Netflix',
       category: 'Entertainment',
-      amountRange: { min: 1599, max: 2299 }, // $15.99-$22.99
+      amountRange: { min: -2299, max: -1599 }, // $15.99-$22.99
       frequency: 0.5,
     },
     {
       name: 'Spotify',
       category: 'Entertainment',
-      amountRange: { min: 1099, max: 1699 }, // $10.99-$16.99
+      amountRange: { min: -1699, max: -1099 }, // $10.99-$16.99
       frequency: 0.5,
     },
     {
       name: 'AMC Theatres',
       category: 'Entertainment',
-      amountRange: { min: 2500, max: 6000 }, // $25-$60
+      amountRange: { min: -6000, max: -2500 }, // $25-$60
       frequency: 0.5,
     },
     {
       name: 'LA Fitness',
       category: 'Gym',
-      amountRange: { min: 3500, max: 7500 }, // $35-$75
+      amountRange: { min: -7500, max: -3500 }, // $35-$75
       frequency: 0.5,
     },
 
@@ -188,13 +230,13 @@ export const transactionConfig: TransactionGeneratorConfig = {
     {
       name: 'CVS Pharmacy',
       category: 'Pharmacy',
-      amountRange: { min: 1500, max: 8000 }, // $15-$80
+      amountRange: { min: -8000, max: -1500 }, // $15-$80
       frequency: 0.8,
     },
     {
       name: 'Walgreens',
       category: 'Pharmacy',
-      amountRange: { min: 1200, max: 7500 }, // $12-$75
+      amountRange: { min: -7500, max: -1200 }, // $12-$75
       frequency: 0.7,
     },
 
@@ -202,7 +244,7 @@ export const transactionConfig: TransactionGeneratorConfig = {
     {
       name: 'Great Clips',
       category: 'Personal Care',
-      amountRange: { min: 1800, max: 3500 }, // $18-$35
+      amountRange: { min: -3500, max: -1800 }, // $18-$35
       frequency: 0.3,
     },
 
@@ -210,13 +252,13 @@ export const transactionConfig: TransactionGeneratorConfig = {
     {
       name: 'Home Depot',
       category: 'Home Improvement',
-      amountRange: { min: 3000, max: 25000 }, // $30-$250
+      amountRange: { min: -25000, max: -3000 }, // $30-$250
       frequency: 0.5,
     },
     {
       name: 'Lowes',
       category: 'Home Improvement',
-      amountRange: { min: 3500, max: 20000 }, // $35-$200
+      amountRange: { min: -20000, max: -3500 }, // $35-$200
       frequency: 0.4,
     },
 
@@ -224,86 +266,56 @@ export const transactionConfig: TransactionGeneratorConfig = {
     {
       name: 'Direct Deposit - Salary',
       category: 'Salary',
-      amountRange: { min: 350000, max: 550000 }, // $3500-$5500
-      frequency: 1.5, // More frequent (bi-weekly paychecks ~24/year)
-    },
-    {
-      name: 'Direct Deposit - Paycheck',
-      category: 'Salary',
-      amountRange: { min: 300000, max: 500000 }, // $3000-$5000
-      frequency: 1.2,
+      amountRange: { min: 350000, max: 420000 }, // $3500-$4200 (bi-weekly paycheck)
+      frequency: 1.0, // Bi-weekly paychecks (~26/year, 52 over 2 years = ~$195k)
     },
     {
       name: 'Freelance Income - Client Payment',
       category: 'Freelance',
-      amountRange: { min: 50000, max: 300000 }, // $500-$3000
-      frequency: 0.8,
+      amountRange: { min: 30000, max: 100000 }, // $300-$1000
+      frequency: 0.08, // Occasional freelance work
     },
     {
       name: 'Upwork',
       category: 'Freelance',
-      amountRange: { min: 25000, max: 150000 }, // $250-$1500
-      frequency: 0.5,
+      amountRange: { min: 15000, max: 60000 }, // $150-$600
+      frequency: 0.05, // Occasional side gigs
     },
     {
       name: 'Interest - Savings Account',
       category: 'Investments',
-      amountRange: { min: 500, max: 5000 }, // $5-$50
-      frequency: 0.3, // Monthly interest
+      amountRange: { min: 500, max: 2000 }, // $5-$20
+      frequency: 0.08, // Monthly interest
     },
     {
       name: 'Dividend Payment',
       category: 'Investments',
-      amountRange: { min: 5000, max: 50000 }, // $50-$500
-      frequency: 0.2, // Quarterly dividends
-    },
-    {
-      name: 'Investment Return',
-      category: 'Investments',
-      amountRange: { min: 10000, max: 100000 }, // $100-$1000
-      frequency: 0.2,
-    },
-    {
-      name: 'Annual Bonus',
-      category: 'Salary',
-      amountRange: { min: 200000, max: 1000000 }, // $2000-$10000
-      frequency: 0.05, // Once or twice a year
+      amountRange: { min: 2000, max: 10000 }, // $20-$100
+      frequency: 0.03, // Quarterly dividends
     },
     {
       name: 'Tax Refund',
       category: 'Other Income',
-      amountRange: { min: 100000, max: 300000 }, // $1000-$3000
-      frequency: 0.03, // Once a year
+      amountRange: { min: 50000, max: 120000 }, // $500-$1200
+      frequency: 0.015, // Once a year
     },
     {
       name: 'Reimbursement',
       category: 'Other Income',
-      amountRange: { min: 2000, max: 50000 }, // $20-$500
-      frequency: 0.3,
+      amountRange: { min: 2000, max: 15000 }, // $20-$150
+      frequency: 0.06,
     },
     {
       name: 'Cash Back Rewards',
       category: 'Other Income',
-      amountRange: { min: 1000, max: 10000 }, // $10-$100
-      frequency: 0.4,
+      amountRange: { min: 1000, max: 5000 }, // $10-$50
+      frequency: 0.1,
     },
     {
       name: 'Gift',
       category: 'Other Income',
-      amountRange: { min: 5000, max: 50000 }, // $50-$500
-      frequency: 0.1, // Occasional gifts
-    },
-    {
-      name: 'Rental Income',
-      category: 'Business Income',
-      amountRange: { min: 150000, max: 300000 }, // $1500-$3000
-      frequency: 0.4, // Monthly rental income for some users
-    },
-    {
-      name: 'Side Business Revenue',
-      category: 'Business Income',
-      amountRange: { min: 50000, max: 250000 }, // $500-$2500
-      frequency: 0.5,
+      amountRange: { min: 5000, max: 20000 }, // $50-$200
+      frequency: 0.03, // Occasional gifts
     },
   ],
 };

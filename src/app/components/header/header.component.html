@@ -2,8 +2,36 @@
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <div class="flex h-16 items-center justify-between">
       <!-- Logo/Brand -->
-      <div class="flex items-center">
+      <div class="flex items-center space-x-8">
         <a routerLink="/dashboard" class="text-xl font-bold text-foreground"> XupremeCoders </a>
+
+        <!-- Navigation Links -->
+        @if (isAuthenticated()) {
+          <nav class="flex space-x-6">
+            <a
+              routerLink="/dashboard"
+              routerLinkActive="!text-foreground"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Chat
+            </a>
+            <a
+              routerLink="/accounts"
+              routerLinkActive="!text-foreground"
+              class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Accounts
+            </a>
+            <a
+              routerLink="/transactions"
+              routerLinkActive="!text-foreground"
+              class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Transactions
+            </a>
+          </nav>
+        }
       </div>
 
       <!-- Navigation and User Menu -->

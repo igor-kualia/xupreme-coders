@@ -267,6 +267,21 @@ export class TransactionsComponent {
   }
 
   formatDate(dateString: string): string {
+    // Parse date string and create date in local timezone
+    // This handles dates without timestamps (e.g., "2024-10-29")
+    const parts = dateString.split('-');
+    if (parts.length === 3) {
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1; // months are 0-indexed
+      const day = parseInt(parts[2], 10);
+      const date = new Date(year, month, day);
+      return new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      }).format(date);
+    }
+    // Fallback for dates with timestamps
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',

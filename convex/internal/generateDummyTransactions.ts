@@ -23,15 +23,10 @@ function generateAmount(merchant: MerchantConfig): number {
   const baseAmount = randomInt(min, max);
 
   // Add some variance (+/- 10%)
-  const variance = Math.floor(baseAmount * 0.1);
+  const variance = Math.floor(Math.abs(baseAmount) * 0.1);
   const amount = baseAmount + randomInt(-variance, variance);
 
-  // For income categories, make amount positive; for expenses, negative
-  if (merchant.category === 'Salary' || merchant.category.includes('Income')) {
-    return Math.abs(amount);
-  }
-
-  return -Math.abs(amount);
+  return amount;
 }
 
 /**
