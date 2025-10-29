@@ -43,7 +43,7 @@
     <div class="rounded-lg border border-destructive bg-card p-6 shadow">
       <p class="text-destructive">{{ transactionsService.error() }}</p>
       <button
-        class="mt-4 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+        class="mt-4 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:cursor-pointer hover:text-accent-foreground"
         (click)="transactionsService.refresh()"
       >
         Retry
@@ -180,7 +180,7 @@
         @if (transactionsService.hasMore() && !transactionsService.loadingMore()) {
           <button
             (click)="loadMore()"
-            class="mt-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+            class="mt-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:cursor-pointer hover:text-accent-foreground"
           >
             Load More
           </button>

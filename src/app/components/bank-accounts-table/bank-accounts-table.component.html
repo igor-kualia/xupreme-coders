@@ -1,0 +1,161 @@
+<div class="space-y-4">
+  <div class="flex items-center justify-between">
+    <h2 class="text-2xl font-bold">Bank Accounts</h2>
+    <div class="flex items-center gap-2">
+      @if (loading()) {
+        <span class="text-sm text-muted-foreground">Loading...</span>
+      }
+      @if (connectionState() === 'idle') {
+        <button
+          (click)="linkBank()"
+          class="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 hover:cursor-pointer"
+        >
+          <ng-icon name="lucidePlus" hlm size="sm" />
+          Link Bank Account
+        </button>
+      }
+      @if (connectionState() === 'loading' || connectionState() === 'processing') {
+        <div class="flex items-center gap-2 text-sm text-muted-foreground">
+          <ng-icon name="lucideLoader2" hlm size="sm" class="animate-spin" />
+          <span>{{ connectionState() === 'loading' ? 'Connecting...' : 'Processing...' }}</span>
+        </div>
+      }
+    </div>
+  </div>
+
+  @if (connectionState() === 'success' && successMessage()) {
+    <div
+      class="rounded-md border border-green-500/20 bg-green-500/10 px-4 py-3 text-sm text-green-800 dark:text-green-200"
+    >
+      {{ successMessage() }}
+    </div>
+  }
+
+  @if (connectionState() === 'error' && errorMessage()) {
+    <div class="rounded-md bg-destructive/15 p-4 text-sm text-destructive">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (error()) {
+    <div class="rounded-md bg-destructive/15 p-4 text-sm text-destructive">
+      {{ error() }}
+    </div>
+  }
+
+  @if (!loading() && !hasAccounts()) {
+    <div class="rounded-md border border-dashed p-8 text-center">
+      <p class="text-muted-foreground">No bank accounts found.</p>
+      <p class="mt-2 text-sm text-muted-foreground">Connect a bank account to get started.</p>
+    </div>
+  }
+
+  @if (hasAccounts()) {
+    <div hlmTableContainer class="rounded-md border">
+      <table hlmTable>
+        <thead hlmTHead>
+          <tr hlmTr>
+            <th hlmTh>Institution</th>
+            <th hlmTh>Account Name</th>
+            <th hlmTh>Type</th>
+            <th hlmTh class="text-right">Balance</th>
+            <th hlmTh class="text-right">Available</th>
+            <th hlmTh>Account</th>
+            <th hlmTh>Status</th>
+            <th hlmTh>Transactions</th>
+          </tr>
+        </thead>
+        <tbody hlmTBody>
+          @for (account of accounts(); track account._id) {
+            <tr hlmTr>
+              <td hlmTd>
+                <div class="flex items-center gap-3">
+                  @if (account.institutionLogoUrl) {
+                    <img
+                      [src]="account.institutionLogoUrl"
+                      [alt]="account.institutionName || 'Bank logo'"
+                      class="size-8 rounded object-contain"
+                    />
+                  } @else {
+                    <div
+                      class="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary"
+                    >
+                      <ng-icon name="lucideBuilding2" hlm size="sm" />
+                    </div>
+                  }
+                  <span class="font-medium">
+                    {{ account.institutionName || 'Unknown' }}
+                  </span>
+                </div>
+              </td>
+              <td hlmTd>
+                <div>
+                  <div class="font-medium">{{ account.name }}</div>
+                  @if (account.officialName && account.officialName !== account.name) {
+                    <div class="text-xs text-muted-foreground">
+                      {{ account.officialName }}
+                    </div>
+                  }
+                </div>
+              </td>
+              <td hlmTd>
+                <span class="capitalize">
+                  {{ formatAccountType(account.accountType) }}
+                </span>
+              </td>
+              <td hlmTd class="text-right font-mono">
+                {{ formatCurrency(account.currentBalance) }}
+              </td>
+              <td hlmTd class="text-right font-mono">
+                {{ formatCurrency(account.availableBalance) }}
+              </td>
+              <td hlmTd>
+                @if (account.accountNumberMask) {
+                  <span class="font-mono text-sm">••••{{ account.accountNumberMask }}</span>
+                } @else {
+                  <span class="text-muted-foreground">—</span>
+                }
+              </td>
+              <td hlmTd>
+                <span
+                  class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium"
+                  [class]="getStatusClass(account.itemStatus)"
+                >
+                  {{ account.itemStatus || 'Unknown' }}
+                </span>
+              </td>
+              <td hlmTd>
+                @if (
+                  account.transactionsStatus === 'pending' ||
+                  account.transactionsStatus === 'generating'
+                ) {
+                  <div class="flex items-center gap-2 text-sm text-muted-foreground">
+                    <ng-icon name="lucideLoader2" hlm size="sm" class="animate-spin" />
+                    <span>
+                      {{
+                        account.transactionsStatus === 'pending' ? 'Loading...' : 'Generating...'
+                      }}
+                    </span>
+                  </div>
+                } @else if (account.transactionsStatus === 'completed') {
+                  <span class="text-sm text-green-600">Ready</span>
+                } @else if (account.transactionsStatus === 'failed') {
+                  <span class="text-sm text-red-600">Failed</span>
+                } @else {
+                  <span class="text-sm text-muted-foreground">—</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="flex items-center justify-between text-sm text-muted-foreground">
+      <p>Showing {{ accounts().length }} account(s)</p>
+      @if (lastSynced()) {
+        <p>Last synced: {{ formatDate(lastSynced()!) }}</p>
+      }
+    </div>
+  }
+</div>

@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, Router } from '@angular/router';
 import { HeaderComponent } from './components/header/header.component';
 import { DevUtilsService } from './services/dev-utils.service';
 import { environment } from '../environments/environment';
@@ -26,6 +26,7 @@ declare global {
 })
 export class App implements OnInit {
   private readonly devUtils = inject(DevUtilsService);
+  private readonly router = inject(Router);
 
   ngOnInit(): void {
     // Expose dev utilities to browser console in development mode only
@@ -43,5 +44,9 @@ export class App implements OnInit {
         'color: #6b7280; font-size: 11px;',
       );
     }
+  }
+
+  hasRoute(route: string): boolean {
+    return this.router.url.includes(route);
   }
 }
