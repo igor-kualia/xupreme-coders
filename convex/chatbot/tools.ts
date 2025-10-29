@@ -453,7 +453,28 @@ async function formatTransactionList(
     }),
   );
 
-  return `Found ${transactions.length} transaction(s)${transactions.length > limit ? ` (showing first ${limit})` : ''}:\n\n${formattedList.join('\n')}`;
+  const summary = `Found ${transactions.length} transaction(s)${transactions.length > limit ? ` (showing first ${limit})` : ''}:\n\n${formattedList.join('\n')}`;
+
+  // Add command to render transaction table if 3 or more transactions
+  if (sortedTransactions.length >= 3) {
+    const transactionIds = sortedTransactions
+      .map((t) => t._id)
+      .filter((id) => {
+        // Validate that the ID exists and is a string
+        if (!id || typeof id !== 'string') {
+          return false;
+        }
+        // Additional validation: Convex IDs are typically 28-32 characters and alphanumeric
+        return /^[a-z0-9]{28,32}$/i.test(id);
+      });
+
+    if (transactionIds.length > 0) {
+      const command = `[RENDER:transaction-table:${JSON.stringify({ transactionIds })}]`;
+      return `${summary}\n\n${command}`;
+    }
+  }
+
+  return summary;
 }
 
 /**
@@ -595,7 +616,27 @@ async function formatTopExpenses(
     }),
   );
 
-  return `Top ${expenses.length} Expense(s):\n\n${formatted.join('\n')}`;
+  const summary = `Top ${expenses.length} Expense(s):\n\n${formatted.join('\n')}`;
+
+  // Add command to render transaction table if 3 or more transactions
+  if (expenses.length >= 3) {
+    const transactionIds = expenses
+      .map((t) => t._id)
+      .filter((id) => {
+        // Validate that the ID exists and is a string
+        if (!id || typeof id !== 'string') {
+          return false;
+        }
+        return /^[a-z0-9]{28,32}$/i.test(id);
+      });
+
+    if (transactionIds.length > 0) {
+      const command = `[RENDER:transaction-table:${JSON.stringify({ transactionIds })}]`;
+      return `${summary}\n\n${command}`;
+    }
+  }
+
+  return summary;
 }
 
 /**
@@ -625,7 +666,27 @@ async function formatTopIncome(
     }),
   );
 
-  return `Top ${income.length} Income Transaction(s):\n\n${formatted.join('\n')}`;
+  const summary = `Top ${income.length} Income Transaction(s):\n\n${formatted.join('\n')}`;
+
+  // Add command to render transaction table if 3 or more transactions
+  if (income.length >= 3) {
+    const transactionIds = income
+      .map((t) => t._id)
+      .filter((id) => {
+        // Validate that the ID exists and is a string
+        if (!id || typeof id !== 'string') {
+          return false;
+        }
+        return /^[a-z0-9]{28,32}$/i.test(id);
+      });
+
+    if (transactionIds.length > 0) {
+      const command = `[RENDER:transaction-table:${JSON.stringify({ transactionIds })}]`;
+      return `${summary}\n\n${command}`;
+    }
+  }
+
+  return summary;
 }
 
 /**

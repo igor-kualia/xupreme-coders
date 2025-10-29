@@ -17,10 +17,12 @@ import { HlmDialogService } from '../../lib/ui/ui-dialog-helm/src';
 import { ClearChatDialogComponent } from './clear-chat-dialog.component';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideArrowUp, lucidePlus } from '@ng-icons/lucide';
+import { parseMessageCommands, ChatMessageSegment } from '../../types/chat-commands';
+import { ChatTransactionTableComponent } from './chat-transaction-table.component';
 
 @Component({
   selector: 'app-chat',
-  imports: [CommonModule, FormsModule, NgIcon],
+  imports: [CommonModule, FormsModule, NgIcon, ChatTransactionTableComponent],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -56,6 +58,7 @@ export class ChatComponent {
   private hasUserSentMessage = signal<boolean>(false);
   private completedAnimations = signal<Set<string>>(new Set());
   private isAnimating = signal<boolean>(false);
+  private parsedSegmentsCache = new Map<string, ChatMessageSegment[]>();
 
   constructor() {
     effect(
@@ -133,6 +136,32 @@ export class ChatComponent {
     this.lastProcessedMessageId.set(unprocessedMessage._id);
 
     const fullContent = unprocessedMessage.content;
+
+    // Parse the content to detect commands
+    const segments = parseMessageCommands(fullContent);
+    const hasCommands = segments.some((seg) => seg.type === 'component');
+
+    // If there are commands, set the full content immediately so components render
+    // but still animate the text portions
+    if (hasCommands) {
+      const currentMap = new Map(this.typewriterContent());
+      currentMap.set(unprocessedMessage._id, fullContent);
+      this.typewriterContent.set(currentMap);
+
+      // Mark as completed immediately since we're showing the full content
+      const completedSet = new Set(this.completedAnimations());
+      completedSet.add(unprocessedMessage._id);
+      this.completedAnimations.set(completedSet);
+      this.isAnimating.set(false);
+
+      // Try to animate the next message
+      setTimeout(() => {
+        this.startTypewriterEffect(this.messages());
+      }, 100);
+      return;
+    }
+
+    // No commands, proceed with normal typewriter animation
     let currentIndex = 0;
     const speed = 10;
 
@@ -226,6 +255,7 @@ export class ChatComponent {
           this.typewriterContent.set(new Map());
           this.completedAnimations.set(new Set());
           this.isAnimating.set(false);
+          this.parsedSegmentsCache.clear();
         },
         onClose: () => {
           dialogRef.close();
@@ -253,6 +283,29 @@ export class ChatComponent {
   getRenderedMarkdown(content: string): SafeHtml {
     const html = marked.parse(content, { async: false }) as string;
     return this.sanitizer.sanitize(1, html) || '';
+  }
+
+  /**
+   * Parse message content into segments (text and commands)
+   * Uses caching to avoid re-parsing on every change detection
+   */
+  parseMessageSegments(messageId: string, content: string): ChatMessageSegment[] {
+    const cacheKey = `${messageId}:${content}`;
+
+    if (!this.parsedSegmentsCache.has(cacheKey)) {
+      this.parsedSegmentsCache.set(cacheKey, parseMessageCommands(content));
+
+      // Clean up old cache entries (keep last 50)
+      if (this.parsedSegmentsCache.size > 50) {
+        const keysToDelete = Array.from(this.parsedSegmentsCache.keys()).slice(
+          0,
+          this.parsedSegmentsCache.size - 50,
+        );
+        keysToDelete.forEach((key) => this.parsedSegmentsCache.delete(key));
+      }
+    }
+
+    return this.parsedSegmentsCache.get(cacheKey)!;
   }
 
   /**

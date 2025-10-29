@@ -1,11 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { BankAccountsTableComponent } from '../../components/bank-accounts-table/bank-accounts-table.component';
 
 @Component({
   selector: 'app-accounts',
-  imports: [RouterLink, BankAccountsTableComponent],
+  imports: [BankAccountsTableComponent],
   templateUrl: './accounts.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
