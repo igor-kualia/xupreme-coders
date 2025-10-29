@@ -1,4 +1,5 @@
 import { Component, signal, inject, afterNextRender, ChangeDetectionStrategy } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { PlaidService } from '../../services/plaid.service';
 import { AuthService } from '../../services/auth.service';
 import { BankAccountsTableComponent } from '../../components/bank-accounts-table/bank-accounts-table.component';
@@ -11,7 +12,7 @@ type ConnectionState = 'idle' | 'loading' | 'plaid-open' | 'processing' | 'succe
  */
 @Component({
   selector: 'app-dashboard',
-  imports: [BankAccountsTableComponent],
+  imports: [BankAccountsTableComponent, RouterLink],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -59,6 +59,7 @@ export const listBankAccounts = query({
           isDeleted: account.isDeleted,
           deletedAt: account.deletedAt,
           updatedAt: account.updatedAt,
+          transactionsStatus: account.transactionsStatus,
           // Bank link properties
           itemStatus: bankLink.itemStatus,
           lastSyncedAt: bankLink.lastSyncedAt,

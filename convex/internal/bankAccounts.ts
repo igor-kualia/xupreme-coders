@@ -1,4 +1,5 @@
 import { internalMutation } from '../_generated/server';
+import { internal } from '../_generated/api';
 import { v } from 'convex/values';
 
 /**
@@ -48,7 +49,20 @@ export const createBankAccount = internalMutation({
       userId: args.userId,
       updatedAt: now,
       isDeleted: false,
+      createdAt: now,
+      transactionsStatus: 'pending', // Initial status before transaction generation
     });
+
+    // Schedule dummy transaction generation after 5 seconds
+    console.log(`Scheduling transaction generation for bank account ${bankAccountId}`);
+    await ctx.scheduler.runAfter(
+      5000, // 5 seconds
+      internal.internal.generateDummyTransactions.generateDummyTransactions,
+      {
+        bankAccountId,
+        userId: args.userId,
+      },
+    );
 
     return bankAccountId;
   },

@@ -86,6 +86,7 @@ type ConnectionState = 'idle' | 'loading' | 'plaid-open' | 'processing' | 'succe
                 <th hlmTh class="text-right">Available</th>
                 <th hlmTh>Account</th>
                 <th hlmTh>Status</th>
+                <th hlmTh>Transactions</th>
               </tr>
             </thead>
             <tbody hlmTBody>
@@ -146,6 +147,29 @@ type ConnectionState = 'idle' | 'loading' | 'plaid-open' | 'processing' | 'succe
                     >
                       {{ account.itemStatus || 'Unknown' }}
                     </span>
+                  </td>
+                  <td hlmTd>
+                    @if (
+                      account.transactionsStatus === 'pending' ||
+                      account.transactionsStatus === 'generating'
+                    ) {
+                      <div class="flex items-center gap-2 text-sm text-muted-foreground">
+                        <ng-icon name="lucideLoader2" hlm size="sm" class="animate-spin" />
+                        <span>
+                          {{
+                            account.transactionsStatus === 'pending'
+                              ? 'Loading...'
+                              : 'Generating...'
+                          }}
+                        </span>
+                      </div>
+                    } @else if (account.transactionsStatus === 'completed') {
+                      <span class="text-sm text-green-600">Ready</span>
+                    } @else if (account.transactionsStatus === 'failed') {
+                      <span class="text-sm text-red-600">Failed</span>
+                    } @else {
+                      <span class="text-sm text-muted-foreground">—</span>
+                    }
                   </td>
                 </tr>
               }
