@@ -1,4 +1,4 @@
-"use node";
+'use node';
 
 import { ActionCtx } from './_generated/server';
 import jwksClient from 'jwks-rsa';
@@ -84,7 +84,9 @@ async function verifyToken(token: string): Promise<Auth0JWTPayload> {
 
     return payload as Auth0JWTPayload;
   } catch (error) {
-    throw new Error(`Token verification failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Token verification failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
   }
 }
 

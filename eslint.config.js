@@ -18,7 +18,7 @@ module.exports = tseslint.config(
         "error",
         {
           type: "attribute",
-          prefix: "app",
+          prefix: ["app", "hlm"],
           style: "camelCase",
         },
       ],
@@ -26,10 +26,21 @@ module.exports = tseslint.config(
         "error",
         {
           type: "element",
-          prefix: "app",
+          prefix: ["app", "hlm"],
           style: "kebab-case",
         },
       ],
+      "@angular-eslint/no-input-rename": "off",
+      "@typescript-eslint/array-type": "off",
+      "@typescript-eslint/no-empty-function": "off",
+    },
+  },
+  {
+    // Disable strict rules for Spartan UI library files
+    files: ["**/lib/ui/**/*.ts"],
+    rules: {
+      "@angular-eslint/directive-selector": "off",
+      "@angular-eslint/component-selector": "off",
     },
   },
   {
@@ -38,6 +49,9 @@ module.exports = tseslint.config(
       ...angular.configs.templateRecommended,
       ...angular.configs.templateAccessibility,
     ],
-    rules: {},
+    rules: {
+      "@angular-eslint/template/click-events-have-key-events": "off",
+      "@angular-eslint/template/interactive-supports-focus": "off",
+    },
   }
 );

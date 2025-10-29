@@ -25,7 +25,7 @@ export default defineSchema({
       v.literal('Healthy'),
       v.literal('Error'),
       v.literal('Pending'),
-      v.literal('Disconnected')
+      v.literal('Disconnected'),
     ),
     lastSyncedAt: v.optional(v.string()), // Last transaction sync (future use)
     nextCursor: v.optional(v.string()), // Plaid sync cursor (future use)

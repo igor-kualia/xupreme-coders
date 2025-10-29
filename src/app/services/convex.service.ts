@@ -1,4 +1,4 @@
-import { Injectable, OnDestroy, inject } from '@angular/core';
+import { Injectable, OnDestroy, inject, signal, Signal } from '@angular/core';
 import { ConvexClient } from 'convex/browser';
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
@@ -81,6 +81,63 @@ export class ConvexService implements OnDestroy {
   async mutation<T>(mutation: any, args?: Record<string, unknown>): Promise<T> {
     await this.ensureAuth();
     return this.client.mutation(mutation, args ?? {}) as Promise<T>;
+  }
+
+  /**
+   * Subscribe to a query with manual subscription management
+   * @param query The Convex query function
+   * @param args Arguments to pass to the query
+   * @returns An object with a subscribe method
+   */
+  watchQuery<T>(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    query: any,
+    args?: Record<string, unknown>,
+  ): { subscribe: (callback: (value: T | undefined) => void) => () => void } {
+    const subscribe = (callback: (value: T | undefined) => void) => {
+      const unsubscribe = this.client.onUpdate(
+        query,
+        args ?? {},
+        (value: T) => {
+          callback(value);
+        },
+        (error) => {
+          console.error('Query error:', error);
+          callback(undefined);
+        },
+      ) as () => void;
+      return unsubscribe;
+    };
+
+    return { subscribe };
+  }
+
+  /**
+   * Subscribe to a query and return a signal that updates reactively
+   * @param query The Convex query function
+   * @param args Arguments to pass to the query
+   * @returns A signal containing the query result
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  query<T>(query: any, args?: Record<string, unknown>): Signal<T | undefined> {
+    const resultSignal = signal<T | undefined>(undefined);
+
+    const unsubscribe = this.client.onUpdate(
+      query,
+      args ?? {},
+      (value: T) => {
+        resultSignal.set(value);
+      },
+      (error) => {
+        console.error('Query error:', error);
+        resultSignal.set(undefined);
+      },
+    ) as () => void;
+
+    // Track subscription for cleanup
+    this.querySubscriptions.push(unsubscribe);
+
+    return resultSignal.asReadonly();
   }
 
   ngOnDestroy() {

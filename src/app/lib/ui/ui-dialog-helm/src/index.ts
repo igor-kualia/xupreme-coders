@@ -18,12 +18,12 @@ export * from './lib/hlm-dialog-title';
 export * from './lib/hlm-dialog.service';
 
 export const HlmDialogImports = [
-	HlmDialog,
-	HlmDialogClose,
-	HlmDialogContent,
-	HlmDialogDescription,
-	HlmDialogFooter,
-	HlmDialogHeader,
-	HlmDialogOverlay,
-	HlmDialogTitle,
+  HlmDialog,
+  HlmDialogClose,
+  HlmDialogContent,
+  HlmDialogDescription,
+  HlmDialogFooter,
+  HlmDialogHeader,
+  HlmDialogOverlay,
+  HlmDialogTitle,
 ] as const;

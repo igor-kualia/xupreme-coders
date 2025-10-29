@@ -92,7 +92,7 @@ export class PlaidService {
       const result = await this.convexService.action<PlaidLinkTokenResponse>(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (api as any)['bankProviders/plaid/createLinkToken'].createLinkToken,
-        {}
+        {},
       );
 
       if (!result?.linkToken) {
@@ -111,7 +111,7 @@ export class PlaidService {
   initializePlaidLink(
     linkToken: string,
     onSuccess: (publicToken: string, metadata: PlaidLinkOnSuccessMetadata) => void,
-    onExit?: (error: PlaidLinkError | null, metadata: PlaidLinkOnExitMetadata) => void
+    onExit?: (error: PlaidLinkError | null, metadata: PlaidLinkOnExitMetadata) => void,
   ): void {
     if (!window.Plaid) {
       throw new Error('Plaid SDK not loaded');
@@ -159,7 +159,7 @@ export class PlaidService {
    */
   async linkNewPlaidItem(
     publicToken: string,
-    metadata: PlaidLinkOnSuccessMetadata
+    metadata: PlaidLinkOnSuccessMetadata,
   ): Promise<LinkNewPlaidItemResult> {
     try {
       this._loading.set(true);
@@ -182,7 +182,7 @@ export class PlaidService {
             subtype: account.subtype,
             mask: account.mask,
           })),
-        }
+        },
       );
 
       if (!result?.success) {
@@ -251,7 +251,7 @@ export class PlaidService {
         (error, metadata) => {
           console.log('Plaid Link exited:', error, metadata);
           this.destroy();
-        }
+        },
       );
 
       // Open Plaid Link

@@ -4,19 +4,21 @@ import { type VariantProps, cva } from 'class-variance-authority';
 import type { ClassValue } from 'clsx';
 
 export const paginationItemVariants = cva('', {
-	variants: {},
-	defaultVariants: {},
+  variants: {},
+  defaultVariants: {},
 });
 
 export type PaginationItemVariants = VariantProps<typeof paginationItemVariants>;
 
 @Directive({
-	selector: '[hlmPaginationItem]',
-	host: {
-		'[class]': '_computedClass()',
-	},
+  selector: '[hlmPaginationItem]',
+  host: {
+    '[class]': '_computedClass()',
+  },
 })
 export class HlmPaginationItem {
-	public readonly userClass = input<ClassValue>('', { alias: 'class' });
-	protected readonly _computedClass = computed(() => hlm(paginationItemVariants(), this.userClass()));
+  public readonly userClass = input<ClassValue>('', { alias: 'class' });
+  protected readonly _computedClass = computed(() =>
+    hlm(paginationItemVariants(), this.userClass()),
+  );
 }

@@ -3,9 +3,7 @@
     <div class="flex h-16 items-center justify-between">
       <!-- Logo/Brand -->
       <div class="flex items-center">
-        <a routerLink="/dashboard" class="text-xl font-bold text-foreground">
-          XupremeCoders
-        </a>
+        <a routerLink="/dashboard" class="text-xl font-bold text-foreground"> XupremeCoders </a>
       </div>
 
       <!-- Navigation and User Menu -->
@@ -26,7 +24,9 @@
                 class="h-10 w-10 rounded-full border-2 border-border"
               />
             } @else {
-              <div class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-border bg-muted">
+              <div
+                class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-border bg-muted"
+              >
                 <span class="text-sm font-semibold text-muted-foreground">
                   {{ userDisplayName().charAt(0).toUpperCase() }}
                 </span>

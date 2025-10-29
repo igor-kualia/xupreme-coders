@@ -1,4 +1,4 @@
-"use node";
+'use node';
 
 import { action } from '../../_generated/server';
 import { Products, CountryCode } from 'plaid';
@@ -66,7 +66,9 @@ export const createLinkToken = action({
         const plaidError = error as any;
         if (plaidError.response?.data) {
           console.error('Plaid error details:', JSON.stringify(plaidError.response.data, null, 2));
-          throw new Error(`Failed to create Plaid link token: ${JSON.stringify(plaidError.response.data)}`);
+          throw new Error(
+            `Failed to create Plaid link token: ${JSON.stringify(plaidError.response.data)}`,
+          );
         }
       }
 

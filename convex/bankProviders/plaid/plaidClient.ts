@@ -1,4 +1,4 @@
-"use node";
+'use node';
 
 import { Configuration, PlaidApi, PlaidEnvironments } from 'plaid';
 

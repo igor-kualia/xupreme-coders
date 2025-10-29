@@ -2,150 +2,15 @@
   <div class="mx-auto max-w-4xl space-y-6">
     <!-- Welcome Header -->
     <div class="rounded-lg border border-border bg-card p-6 shadow">
-      <h1 class="text-3xl font-bold text-card-foreground">Welcome back, {{ userDisplayName() }}!</h1>
+      <h1 class="text-3xl font-bold text-card-foreground">
+        Welcome back, {{ userDisplayName() }}!
+      </h1>
       <p class="mt-2 text-muted-foreground">Manage your bank accounts and financial connections</p>
     </div>
 
-    <!-- Bank Linking Card -->
-    <div class="rounded-lg border border-border bg-card p-8 shadow">
-      <div class="mb-6 text-center">
-        <h2 class="text-2xl font-bold text-card-foreground">Connect Your Bank Account</h2>
-        <p class="mt-2 text-muted-foreground">Link your bank account with Plaid to get started</p>
-      </div>
-
-      <div class="space-y-4">
-        <!-- Idle State -->
-        @if (connectionState() === 'idle') {
-          <button
-            (click)="linkBank()"
-            class="w-full rounded-md bg-primary px-4 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-          >
-            Link Bank Account
-          </button>
-        }
-
-        <!-- Loading State -->
-        @if (connectionState() === 'loading') {
-          <div class="flex items-center justify-center space-x-2 rounded-md bg-primary/10 px-4 py-3">
-            <svg
-              class="h-5 w-5 animate-spin text-primary"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                class="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                stroke-width="4"
-              ></circle>
-              <path
-                class="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
-            <span class="font-medium text-foreground">Initializing Plaid...</span>
-          </div>
-        }
-
-        <!-- Plaid Open State -->
-        @if (connectionState() === 'plaid-open') {
-          <div class="rounded-md bg-primary/10 px-4 py-3">
-            <p class="text-center font-medium text-foreground">Complete the steps in the Plaid modal</p>
-          </div>
-        }
-
-        <!-- Processing State -->
-        @if (connectionState() === 'processing') {
-          <div class="flex items-center justify-center space-x-2 rounded-md bg-primary/10 px-4 py-3">
-            <svg
-              class="h-5 w-5 animate-spin text-primary"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                class="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                stroke-width="4"
-              ></circle>
-              <path
-                class="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
-            <span class="font-medium text-foreground">Processing your accounts...</span>
-          </div>
-        }
-
-        <!-- Success State -->
-        @if (connectionState() === 'success') {
-          <div class="rounded-md border border-green-500/20 bg-green-500/10 px-4 py-3">
-            <div class="flex items-start">
-              <svg
-                class="h-5 w-5 text-green-600 dark:text-green-400"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-              <div class="ml-3">
-                <p class="text-sm font-medium text-green-800 dark:text-green-200">{{ successMessage() }}</p>
-              </div>
-            </div>
-          </div>
-        }
-
-        <!-- Error State -->
-        @if (connectionState() === 'error') {
-          <div class="space-y-3">
-            <div class="rounded-md border border-red-500/20 bg-red-500/10 px-4 py-3">
-              <div class="flex items-start">
-                <svg
-                  class="h-5 w-5 text-red-600 dark:text-red-400"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-                <div class="ml-3">
-                  <p class="text-sm font-medium text-red-800 dark:text-red-200">{{ errorMessage() }}</p>
-                </div>
-              </div>
-            </div>
-            <button
-              (click)="retry()"
-              class="w-full rounded-md bg-red-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:bg-red-600 dark:hover:bg-red-700"
-            >
-              Try Again
-            </button>
-          </div>
-        }
-
-        <!-- User Info -->
-        <div class="rounded-md border border-border bg-muted p-4 text-xs text-muted-foreground">
-          <p class="font-semibold">Session Info:</p>
-          <p>User ID: {{ userId() }}</p>
-          <p>State: {{ connectionState() }}</p>
-        </div>
-      </div>
+    <!-- Bank Accounts Table -->
+    <div class="rounded-lg border border-border bg-card p-6 shadow">
+      <app-bank-accounts-table />
     </div>
   </div>
 </div>

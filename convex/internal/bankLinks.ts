@@ -21,7 +21,7 @@ export const createBankLink = internalMutation({
       v.literal('Healthy'),
       v.literal('Error'),
       v.literal('Pending'),
-      v.literal('Disconnected')
+      v.literal('Disconnected'),
     ),
     userId: v.string(),
     provider: v.optional(v.union(v.literal('plaid'), v.literal('saltedge'))),
