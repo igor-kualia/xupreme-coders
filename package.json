@@ -11,7 +11,10 @@
     "lint:fix": "ng lint --fix",
     "format:check": "prettier --check \"src/**/*.{ts,html,scss,json}\" \"convex/**/*.{ts,js,json}\"",
     "format": "prettier --write \"src/**/*.{ts,html,scss,json}\" \"convex/**/*.{ts,js,json}\"",
-    "check": "npm run format:check && npm run lint && npm run test -- --no-watch --no-progress --browsers=ChromeHeadless && npm run build"
+    "check": "npm run format:check && npm run lint && npm run test -- --no-watch --no-progress --browsers=ChromeHeadless && npm run build",
+    "e2e": "ng e2e",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run"
   },
   "prettier": {
     "printWidth": 100,
@@ -57,6 +60,7 @@
     "@angular/build": "^20.3.7",
     "@angular/cli": "^20.3.7",
     "@angular/compiler-cli": "^20.3.0",
+    "@cypress/schematic": "^4.1.4",
     "@spartan-ng/cli": "^0.0.1-alpha.538",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^24.9.2",
@@ -74,6 +78,7 @@
     "prettier-plugin-organize-imports": "^4.3.0",
     "prettier-plugin-tailwindcss": "^0.7.1",
     "typescript": "~5.9.2",
-    "typescript-eslint": "8.46.1"
+    "typescript-eslint": "8.46.1",
+    "cypress": "15.5.0"
   }
 }
