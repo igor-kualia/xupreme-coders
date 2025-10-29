@@ -3,4 +3,13 @@ export const environment = {
   convex: {
     url: 'https://rugged-lark-476.convex.cloud', // Fill in your Convex production deployment URL
   },
+  auth0: {
+    domain: 'dev-yjz445wxd3w30hb0.us.auth0.com', // e.g., 'your-tenant.auth0.com'
+    clientId: 'ZnG3Xc9nJ4Pw4xIFvJR1lgLvF5nfgoIR',
+    authorizationParams: {
+      redirect_uri: 'https://your-production-domain.com/callback', // Update with your production URL
+      audience: 'https://api.xupreme-coders.com', // Your custom Auth0 API identifier
+      scope: 'openid profile email', // Explicitly set scopes
+    },
+  },
 };

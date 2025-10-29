@@ -1,0 +1,33 @@
+<div class="flex min-h-screen items-center justify-center bg-background px-4">
+  <div class="w-full max-w-md space-y-8">
+    <div class="text-center">
+      <h1 class="text-4xl font-bold tracking-tight text-foreground">XupremeCoders</h1>
+      <p class="mt-2 text-lg text-muted-foreground">Financial Management Platform</p>
+    </div>
+
+    <div class="rounded-lg border border-border bg-card p-8 shadow-lg">
+      <h2 class="mb-6 text-center text-2xl font-semibold text-card-foreground">Welcome</h2>
+
+      <p class="mb-6 text-center text-sm text-muted-foreground">
+        Sign in to access your financial dashboard and manage your bank accounts.
+      </p>
+
+      <button
+        type="button"
+        (click)="login()"
+        [disabled]="isLoading()"
+        class="w-full rounded-md bg-primary px-4 py-3 font-semibold text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        @if (isLoading()) {
+          <span>Loading...</span>
+        } @else {
+          <span>Log In</span>
+        }
+      </button>
+
+      <p class="mt-4 text-center text-xs text-muted-foreground">
+        Secure authentication powered by Auth0
+      </p>
+    </div>
+  </div>
+</div>

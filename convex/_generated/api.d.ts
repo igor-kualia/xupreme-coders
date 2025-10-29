@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as auth from "../auth.js";
 import type * as bankProviders_plaid_createLinkToken from "../bankProviders/plaid/createLinkToken.js";
 import type * as bankProviders_plaid_linkNewPlaidItem from "../bankProviders/plaid/linkNewPlaidItem.js";
 import type * as bankProviders_plaid_plaidClient from "../bankProviders/plaid/plaidClient.js";
@@ -30,6 +31,7 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  auth: typeof auth;
   "bankProviders/plaid/createLinkToken": typeof bankProviders_plaid_createLinkToken;
   "bankProviders/plaid/linkNewPlaidItem": typeof bankProviders_plaid_linkNewPlaidItem;
   "bankProviders/plaid/plaidClient": typeof bankProviders_plaid_plaidClient;

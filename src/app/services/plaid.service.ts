@@ -86,13 +86,13 @@ export class PlaidService {
   private readonly _loading = signal(false);
   readonly loading = this._loading.asReadonly();
 
-  async createLinkToken(userId: string): Promise<string> {
+  async createLinkToken(): Promise<string> {
     try {
       this._loading.set(true);
       const result = await this.convexService.action<PlaidLinkTokenResponse>(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (api as any)['bankProviders/plaid/createLinkToken'].createLinkToken,
-        { userId }
+        {}
       );
 
       if (!result?.linkToken) {
@@ -152,15 +152,14 @@ export class PlaidService {
 
   /**
    * Links a new Plaid item after successful authentication
+   * Uses authenticated user from JWT token automatically
    * @param publicToken The public token from Plaid Link
    * @param metadata The metadata from Plaid Link success callback
-   * @param userId The user ID
    * @returns The result of linking the Plaid item
    */
   async linkNewPlaidItem(
     publicToken: string,
-    metadata: PlaidLinkOnSuccessMetadata,
-    userId: string
+    metadata: PlaidLinkOnSuccessMetadata
   ): Promise<LinkNewPlaidItemResult> {
     try {
       this._loading.set(true);
@@ -183,7 +182,6 @@ export class PlaidService {
             subtype: account.subtype,
             mask: account.mask,
           })),
-          userId,
         }
       );
 
@@ -228,19 +226,19 @@ export class PlaidService {
 
   /**
    * Initiates the Plaid Link flow for connecting a new bank account
-   * @param userId The user ID to link the bank account to
+   * Uses authenticated user from JWT token automatically
    */
-  async initiateConnectionFlow(userId: string): Promise<void> {
+  async initiateConnectionFlow(): Promise<void> {
     try {
       // Create link token
-      const linkToken = await this.createLinkToken(userId);
+      const linkToken = await this.createLinkToken();
 
       // Initialize Plaid Link
       this.initializePlaidLink(
         linkToken,
         (publicToken: string, metadata: PlaidLinkOnSuccessMetadata) => {
           // On success, link the new Plaid item
-          void this.linkNewPlaidItem(publicToken, metadata, userId)
+          void this.linkNewPlaidItem(publicToken, metadata)
             .then(() => {
               this.destroy();
             })
