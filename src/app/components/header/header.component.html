@@ -34,42 +34,59 @@
         }
       </div>
 
-      <!-- Navigation and User Menu -->
+      <!-- User Profile Dropdown -->
       @if (isAuthenticated()) {
-        <div class="flex items-center space-x-4">
-          <!-- User Info -->
-          <div class="flex items-center space-x-3">
-            <div class="text-right">
-              <p class="text-sm font-medium text-foreground">{{ userDisplayName() }}</p>
-              <p class="text-xs text-muted-foreground">{{ user()?.email }}</p>
-            </div>
-
+        <div>
+          <button
+            type="button"
+            class="flex items-center space-x-3 rounded-md px-3 py-2 transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            brnMenuTrigger
+            [brnMenuTriggerFor]="userMenu"
+            aria-haspopup="menu"
+          >
             <!-- User Avatar -->
             @if (user()?.picture) {
               <img
                 [src]="user()?.picture"
                 alt="User avatar"
-                class="h-10 w-10 rounded-full border-2 border-border"
+                class="h-8 w-8 rounded-full border-2 border-border"
               />
             } @else {
               <div
-                class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-border bg-muted"
+                class="flex h-8 w-8 items-center justify-center rounded-full border-2 border-border bg-muted"
               >
-                <span class="text-sm font-semibold text-muted-foreground">
+                <span class="text-xs font-semibold text-muted-foreground">
                   {{ userDisplayName().charAt(0).toUpperCase() }}
                 </span>
               </div>
             }
-          </div>
 
-          <!-- Logout Button -->
-          <button
-            type="button"
-            (click)="logout()"
-            class="rounded-md bg-secondary px-4 py-2 text-sm font-semibold text-secondary-foreground transition-colors hover:bg-secondary/80 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-          >
-            Log Out
+            <!-- User Name -->
+            <div class="text-left">
+              <p class="text-sm font-medium text-foreground">{{ userDisplayName() }}</p>
+            </div>
+
+            <!-- Chevron Icon -->
+            <ng-icon hlm name="lucideChevronDown" size="sm" class="text-muted-foreground" />
           </button>
+
+          <!-- Dropdown Menu -->
+          <ng-template #userMenu>
+            <hlm-menu class="w-56">
+              <!-- User Email Label -->
+              <hlm-menu-label class="font-normal">
+                <p class="text-xs leading-none text-muted-foreground">{{ user()?.email }}</p>
+              </hlm-menu-label>
+
+              <hlm-menu-separator />
+
+              <!-- Logout Menu Item -->
+              <button hlmMenuItem (click)="logout()">
+                <ng-icon hlm name="lucideLogOut" size="sm" hlmMenuIcon />
+                <span>Log Out</span>
+              </button>
+            </hlm-menu>
+          </ng-template>
         </div>
       }
     </div>
