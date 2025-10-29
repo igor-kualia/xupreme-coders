@@ -16,7 +16,7 @@ import { marked } from 'marked';
 import { HlmDialogService } from '../../lib/ui/ui-dialog-helm/src';
 import { ClearChatDialogComponent } from './clear-chat-dialog.component';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideArrowUp } from '@ng-icons/lucide';
+import { lucideArrowUp, lucidePlus } from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-chat',
@@ -24,7 +24,7 @@ import { lucideArrowUp } from '@ng-icons/lucide';
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [provideIcons({ lucideArrowUp })],
+  providers: [provideIcons({ lucideArrowUp, lucidePlus })],
 })
 export class ChatComponent {
   private chatService = inject(ChatService);
@@ -90,6 +90,12 @@ export class ChatComponent {
       },
       { allowSignalWrites: true },
     );
+
+    // Auto-resize textarea as user types
+    effect(() => {
+      this.messageInput(); // Track changes to messageInput
+      this.resizeTextarea();
+    });
   }
 
   private startTypewriterEffect(
@@ -182,9 +188,13 @@ export class ChatComponent {
     this.messageInput.set('');
     this.hasUserSentMessage.set(true);
 
-    // Refocus the textarea after clearing the input
+    // Reset textarea height and refocus
     setTimeout(() => {
-      this.messageTextarea()?.nativeElement.focus();
+      const textarea = this.messageTextarea()?.nativeElement;
+      if (textarea) {
+        textarea.style.height = 'auto';
+        textarea.focus();
+      }
     }, 0);
 
     await this.chatService.sendMessage(content);
@@ -243,5 +253,33 @@ export class ChatComponent {
   getRenderedMarkdown(content: string): SafeHtml {
     const html = marked.parse(content, { async: false }) as string;
     return this.sanitizer.sanitize(1, html) || '';
+  }
+
+  /**
+   * Auto-resize textarea based on content
+   */
+  private resizeTextarea(): void {
+    setTimeout(() => {
+      const textarea = this.messageTextarea()?.nativeElement;
+      if (textarea) {
+        // Reset height to auto to get the correct scrollHeight
+        textarea.style.height = 'auto';
+        // Set height to scrollHeight, but max out at 200px (about 8-10 lines)
+        const newHeight = Math.min(textarea.scrollHeight, 200);
+        textarea.style.height = `${newHeight}px`;
+      }
+    }, 0);
+  }
+
+  /**
+   * Focus the textarea when clicking on the input container
+   */
+  focusTextarea(event: MouseEvent): void {
+    // Only focus if clicking on the container itself, not on buttons
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'BUTTON' || target.closest('button')) {
+      return;
+    }
+    this.messageTextarea()?.nativeElement.focus();
   }
 }
