@@ -54,7 +54,7 @@ A personal finance and budgeting application to help users track income, expense
 - 📅 Reports view (monthly, weekly)
 - [Screenshot](stitch_login_sign_up/reports_view/screen.png)
 - 💬 Conversational UI *(Planned)* — a chatbot interface to answer "How much did I spend on food last month?"
-- [Screenshot](stitch_login_sign_upp/conversational_ui/screen.png)
+- [Screenshot](stitch_login_sign_up/conversational_ui/screen.png)
 - 📈 AI Insights *(Planned)* — trend detection, forecasting, budgeting tips  
 - ⚙️ Settings
 
