@@ -19,6 +19,12 @@ export const createLinkToken = action({
     userId: v.string(),
   },
   handler: async (ctx, args) => {
+    console.log('Creating Plaid link token for user:', args.userId);
+    console.log('Plaid config:', {
+      clientName: plaidConfig.clientName,
+      language: plaidConfig.language,
+    });
+
     try {
       // Create link token
       const response = await plaidClient.linkTokenCreate({
@@ -31,12 +37,25 @@ export const createLinkToken = action({
         language: plaidConfig.language,
       });
 
+      console.log('Link token created successfully');
       return {
         linkToken: response.data.link_token,
         expiration: response.data.expiration,
       };
     } catch (error) {
-      // Handle Plaid API errors
+      // Log detailed error information
+      console.error('Plaid API error:', error);
+
+      // Handle Plaid API errors with more detail
+      if (error && typeof error === 'object') {
+        // Plaid errors have response.data with error details
+        const plaidError = error as any;
+        if (plaidError.response?.data) {
+          console.error('Plaid error details:', JSON.stringify(plaidError.response.data, null, 2));
+          throw new Error(`Failed to create Plaid link token: ${JSON.stringify(plaidError.response.data)}`);
+        }
+      }
+
       if (error instanceof Error) {
         throw new Error(`Failed to create Plaid link token: ${error.message}`);
       }

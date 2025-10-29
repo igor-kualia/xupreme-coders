@@ -1,6 +1,6 @@
 import { computed, Directive, input } from '@angular/core';
-import { hlm } from '@spartan-ng/helm/utils';
-import { ClassValue } from 'class-variance-authority/dist/types';
+import type { ClassValue } from 'clsx';
+import { hlm } from '../../../ui-utils-helm/src';
 
 @Directive({
 	selector: '[hlmFieldTitle],hlm-field-title',

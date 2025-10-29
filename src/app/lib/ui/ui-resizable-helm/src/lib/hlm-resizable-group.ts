@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { BrnResizableGroup } from '@spartan-ng/brain/resizable';
-import { hlm } from '@spartan-ng/helm/utils';
 import type { ClassValue } from 'clsx';
+import { hlm } from '../../../ui-utils-helm/src';
 
 @Component({
 	selector: 'hlm-resizable-group',
