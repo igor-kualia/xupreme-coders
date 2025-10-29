@@ -2,10 +2,22 @@
   <div class="mx-auto max-w-4xl space-y-6">
     <!-- Welcome Header -->
     <div class="rounded-lg border border-border bg-card p-6 shadow">
-      <h1 class="text-3xl font-bold text-card-foreground">
-        Welcome back, {{ userDisplayName() }}!
-      </h1>
-      <p class="mt-2 text-muted-foreground">Manage your bank accounts and financial connections</p>
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-card-foreground">
+            Welcome back, {{ userDisplayName() }}!
+          </h1>
+          <p class="mt-2 text-muted-foreground">
+            Manage your bank accounts and financial connections
+          </p>
+        </div>
+        <a
+          routerLink="/transactions"
+          class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+        >
+          View Transactions
+        </a>
+      </div>
     </div>
 
     <!-- Bank Accounts Table -->

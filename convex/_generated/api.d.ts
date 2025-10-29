@@ -15,7 +15,10 @@ import type * as bankProviders_plaid_linkNewPlaidItem from "../bankProviders/pla
 import type * as bankProviders_plaid_plaidClient from "../bankProviders/plaid/plaidClient.js";
 import type * as internal_bankAccounts from "../internal/bankAccounts.js";
 import type * as internal_bankLinks from "../internal/bankLinks.js";
+import type * as internal_generateDummyTransactions from "../internal/generateDummyTransactions.js";
 import type * as internal_institutions from "../internal/institutions.js";
+import type * as internal_seedData from "../internal/seedData.js";
+import type * as transactions from "../transactions.js";
 
 import type {
   ApiFromModules,
@@ -39,7 +42,10 @@ declare const fullApi: ApiFromModules<{
   "bankProviders/plaid/plaidClient": typeof bankProviders_plaid_plaidClient;
   "internal/bankAccounts": typeof internal_bankAccounts;
   "internal/bankLinks": typeof internal_bankLinks;
+  "internal/generateDummyTransactions": typeof internal_generateDummyTransactions;
   "internal/institutions": typeof internal_institutions;
+  "internal/seedData": typeof internal_seedData;
+  transactions: typeof transactions;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 
