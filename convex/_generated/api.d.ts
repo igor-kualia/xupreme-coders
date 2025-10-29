@@ -17,6 +17,10 @@ import type * as categorization_categorizeTransactions from "../categorization/c
 import type * as categorization_helpers from "../categorization/helpers.js";
 import type * as categorization_llm from "../categorization/llm.js";
 import type * as categorization_manualTriggers from "../categorization/manualTriggers.js";
+import type * as chatbot_chatbot from "../chatbot/chatbot.js";
+import type * as chatbot_helpers from "../chatbot/helpers.js";
+import type * as chatbot_llm from "../chatbot/llm.js";
+import type * as chatbot_tools from "../chatbot/tools.js";
 import type * as devUtils from "../devUtils.js";
 import type * as internal_bankAccounts from "../internal/bankAccounts.js";
 import type * as internal_bankLinks from "../internal/bankLinks.js";
@@ -51,6 +55,10 @@ declare const fullApi: ApiFromModules<{
   "categorization/helpers": typeof categorization_helpers;
   "categorization/llm": typeof categorization_llm;
   "categorization/manualTriggers": typeof categorization_manualTriggers;
+  "chatbot/chatbot": typeof chatbot_chatbot;
+  "chatbot/helpers": typeof chatbot_helpers;
+  "chatbot/llm": typeof chatbot_llm;
+  "chatbot/tools": typeof chatbot_tools;
   devUtils: typeof devUtils;
   "internal/bankAccounts": typeof internal_bankAccounts;
   "internal/bankLinks": typeof internal_bankLinks;

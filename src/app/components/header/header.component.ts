@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
-import { RouterLink } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 
 /**
  * Header component
@@ -10,7 +10,7 @@ import { RouterLink } from '@angular/router';
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrl: './header.component.css',
-  imports: [RouterLink],
+  imports: [RouterLink, RouterLinkActive],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HeaderComponent {

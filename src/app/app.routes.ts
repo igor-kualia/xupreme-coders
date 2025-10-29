@@ -2,7 +2,8 @@ import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
 import { LoginComponent } from './pages/login/login.component';
 import { CallbackComponent } from './pages/callback/callback.component';
-import { DashboardComponent } from './pages/dashboard/dashboard.component';
+import { ChatComponent } from './pages/chat/chat.component';
+import { AccountsComponent } from './pages/accounts/accounts.component';
 import { TransactionsComponent } from './pages/transactions/transactions.component';
 
 export const routes: Routes = [
@@ -21,7 +22,12 @@ export const routes: Routes = [
   },
   {
     path: 'dashboard',
-    component: DashboardComponent,
+    component: ChatComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'accounts',
+    component: AccountsComponent,
     canActivate: [authGuard],
   },
   {
