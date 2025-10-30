@@ -1,5 +1,7 @@
 <div class="min-h-screen bg-background">
+  @if (!hasRoute('login')) {
   <app-header />
+  }
   <main>
     <router-outlet />
   </main>
