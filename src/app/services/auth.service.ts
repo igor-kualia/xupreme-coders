@@ -43,6 +43,19 @@ export class AuthService {
   }
 
   /**
+   * Initiates the Auth0 signup flow
+   * @param returnUrl - Optional URL to redirect to after signup
+   */
+  signup(returnUrl?: string): void {
+    this.auth0.loginWithRedirect({
+      appState: { target: returnUrl || '/dashboard' },
+      authorizationParams: {
+        screen_hint: 'signup',
+      },
+    });
+  }
+
+  /**
    * Logs out the user and redirects to the home page
    */
   logout(): void {

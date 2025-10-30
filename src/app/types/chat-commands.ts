@@ -9,7 +9,8 @@ export type ChatCommandType =
   | 'transaction-table'
   | 'category-chart'
   | 'bank-account-table'
-  | 'transaction-edit-preview';
+  | 'transaction-edit-preview'
+  | 'account-connection-prompt';
 
 export interface TransactionTableCommand {
   transactionIds: string[];
@@ -37,11 +38,16 @@ export interface TransactionEditPreviewCommand {
   };
 }
 
+export interface AccountConnectionPromptCommand {
+  reason: string;
+}
+
 export type ChatCommandData =
   | TransactionTableCommand
   | CategoryChartCommand
   | BankAccountTableCommand
-  | TransactionEditPreviewCommand;
+  | TransactionEditPreviewCommand
+  | AccountConnectionPromptCommand;
 
 export interface ChatCommand {
   type: ChatCommandType;
@@ -86,6 +92,16 @@ export function isTransactionEditPreviewCommand(
   data: ChatCommandData,
 ): data is TransactionEditPreviewCommand {
   return type === 'transaction-edit-preview';
+}
+
+/**
+ * Type guard to check if command data is AccountConnectionPromptCommand
+ */
+export function isAccountConnectionPromptCommand(
+  type: ChatCommandType,
+  data: ChatCommandData,
+): data is AccountConnectionPromptCommand {
+  return type === 'account-connection-prompt';
 }
 
 export interface ChatMessageSegment {

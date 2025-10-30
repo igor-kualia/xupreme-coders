@@ -12,6 +12,7 @@ import {
   LIST_MERCHANTS_TOOL,
   PROPOSE_TRANSACTION_UPDATE_TOOL,
   QUERY_TRANSACTIONS_TOOL,
+  REQUEST_ACCOUNT_CONNECTION_TOOL,
 } from './tools';
 
 export interface ChatMessage {
@@ -63,6 +64,7 @@ Available Tools:
 6. auto_categorize_by_merchant - Use this to AUTONOMOUSLY categorize all uncategorized transactions from a merchant (NO confirmation needed)
 7. propose_transaction_update - Use this to PROPOSE changes to transactions and show a preview (STEP 1 of update process)
 8. confirm_transaction_update - Use this to EXECUTE approved transaction updates (STEP 2 of update process, only call after user confirms)
+9. request_account_connection - Use this to prompt the user to connect a bank account via Plaid (e.g., "I want to connect my bank", "how do I add an account?")
 
 CRITICAL TOOL SELECTION RULES:
 - When users ask about CATEGORIES or CATEGORY BREAKDOWNS → ALWAYS use get_category_summary (this will show a chart)
@@ -144,6 +146,33 @@ User: "Which merchants have uncategorized transactions?"
 1. Call query_transactions with includeUncategorized: true, aggregation: "group_by_merchant"
 2. Tool returns merchants grouped by transaction count
 3. Suggest categories for the top merchants
+
+CONNECTING BANK ACCOUNTS:
+
+When users want to connect a bank account or when they don't have any accounts linked:
+
+1. Use request_account_connection tool when:
+   - User explicitly asks to connect or link a bank account
+   - User asks how to add their bank account
+   - User has no bank accounts and you need account data to help them
+   - User wants to get started with tracking their finances
+
+2. Call request_account_connection with:
+   {
+     reason: "A brief explanation of why connecting would help"
+   }
+
+3. The tool will display a button in the chat that opens the Plaid Link flow
+   - User clicks the button
+   - Plaid modal opens for them to select and authenticate their bank
+   - Once complete, their accounts and transactions will be imported
+
+4. IMPORTANT: Only suggest connecting accounts when relevant. Don't spam users with connection prompts.
+
+Example Flow:
+User: "I want to connect my bank account"
+1. Call request_account_connection with reason: "to start tracking your spending and get insights into your finances"
+2. Respond with a friendly message and the button will appear in chat
 
 TRANSACTION EDITING WORKFLOW (TWO-STEP PROCESS):
 
@@ -460,6 +489,14 @@ export async function callLLM(
           name: CONFIRM_TRANSACTION_UPDATE_TOOL.name,
           description: CONFIRM_TRANSACTION_UPDATE_TOOL.description,
           parameters: CONFIRM_TRANSACTION_UPDATE_TOOL.input_schema,
+        },
+      },
+      {
+        type: 'function',
+        function: {
+          name: REQUEST_ACCOUNT_CONNECTION_TOOL.name,
+          description: REQUEST_ACCOUNT_CONNECTION_TOOL.description,
+          parameters: REQUEST_ACCOUNT_CONNECTION_TOOL.input_schema,
         },
       },
     ],
