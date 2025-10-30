@@ -70,9 +70,9 @@ export const transactionConfig: TransactionGeneratorConfig = {
 
         // Car Payment
         {
-          merchant: 'Auto Loan Payment',
+          merchant: 'KeyBank Auto Loan',
           category: 'Auto & Transport',
-          amount: -50000, // $500
+          amount: -43819, // $438.19
           frequency: 'monthly',
           dayOfMonth: 15,
         },
@@ -86,7 +86,7 @@ export const transactionConfig: TransactionGeneratorConfig = {
           dayOfMonth: 20,
         },
         {
-          merchant: 'Credit Card Payment',
+          merchant: 'Chase',
           category: 'Credit Card Payment',
           amount: -50000, // -$500
           frequency: 'monthly',
@@ -160,7 +160,7 @@ export const transactionConfig: TransactionGeneratorConfig = {
           maxPerMonth: 7,
         },
         {
-          merchant: 'McDonalds',
+          merchant: "McDonald's",
           category: 'Restaurants',
           amountRange: { min: -1500, max: -800 }, // $8-$15
           frequency: 'random_monthly',
