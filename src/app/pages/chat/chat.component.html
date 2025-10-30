@@ -70,6 +70,15 @@
             </div>
           </div>
         }
+        @for (queuedMessage of messageQueue(); track $index) {
+          <div class="flex w-full justify-end opacity-50">
+            <div class="bg-primary text-primary-foreground max-w-[80%] rounded-2xl px-4 py-3">
+              <div class="text-sm break-words whitespace-pre-wrap">
+                {{ queuedMessage }}
+              </div>
+            </div>
+          </div>
+        }
         @for (message of messages(); track message._id) {
           @if (shouldShowMessage(message._id, message.role)) {
             @if (message.role === 'user') {
@@ -98,7 +107,23 @@
                     } @else if (segment.type === 'component' && segment.command) {
                       @if (segment.command.type === 'transaction-table') {
                         <app-chat-transaction-table
-                          [transactionIds]="segment.command.data.transactionIds"
+                          [transactionIds]="
+                            asTransactionTableCommand(segment.command.data).transactionIds
+                          "
+                        />
+                      } @else if (segment.command.type === 'category-chart') {
+                        <app-chat-category-chart
+                          [categoryIds]="asCategoryChartCommand(segment.command.data).categoryIds"
+                          [chartType]="asCategoryChartCommand(segment.command.data).chartType"
+                          [startDate]="asCategoryChartCommand(segment.command.data).startDate"
+                          [endDate]="asCategoryChartCommand(segment.command.data).endDate"
+                          [transactionType]="
+                            asCategoryChartCommand(segment.command.data).transactionType
+                          "
+                        />
+                      } @else if (segment.command.type === 'bank-account-table') {
+                        <app-chat-bank-account-table
+                          [accountIds]="asBankAccountTableCommand(segment.command.data).accountIds"
                         />
                       }
                     }
@@ -140,7 +165,6 @@
           placeholder="Ask me about your finances..."
           rows="1"
           class="text-foreground placeholder-muted-foreground flex-1 resize-none bg-transparent text-sm focus:outline-none overflow-y-auto"
-          [disabled]="isLoading()"
           style="min-height: 40px; max-height: 200px; padding: 10px 0; line-height: 1.5"
         ></textarea>
         <button

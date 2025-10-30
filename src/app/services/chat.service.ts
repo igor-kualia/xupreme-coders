@@ -27,12 +27,46 @@ export class ChatService {
 
   readonly isLoading = signal<boolean>(false);
   readonly error = signal<string | null>(null);
+  readonly messageQueue = signal<string[]>([]);
+  private readonly isProcessing = signal<boolean>(false);
 
   async sendMessage(content: string): Promise<void> {
     if (!content.trim()) {
       return;
     }
 
+    // Add message to queue
+    this.messageQueue.update((queue) => [...queue, content]);
+
+    // Start processing if not already processing
+    if (!this.isProcessing()) {
+      await this.processQueue();
+    }
+  }
+
+  private async processQueue(): Promise<void> {
+    if (this.messageQueue().length === 0) {
+      this.isProcessing.set(false);
+      return;
+    }
+
+    this.isProcessing.set(true);
+
+    // Get the first message from the queue
+    const queue = this.messageQueue();
+    const message = queue[0];
+
+    // Remove the message from the queue
+    this.messageQueue.set(queue.slice(1));
+
+    // Send the message
+    await this.sendMessageToApi(message);
+
+    // Process next message in queue
+    await this.processQueue();
+  }
+
+  private async sendMessageToApi(content: string): Promise<void> {
     this.isLoading.set(true);
     this.error.set(null);
 

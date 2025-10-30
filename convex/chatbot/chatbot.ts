@@ -7,9 +7,13 @@ import { internal } from '../_generated/api';
 import { action, internalMutation, internalQuery, mutation, query } from '../_generated/server';
 import { callLLM, ToolResult } from './llm';
 import {
+  executeGetCategorySummary,
+  executeListBankAccounts,
   executeListCategories,
   executeListMerchants,
   executeQueryTransactions,
+  GetCategorySummaryInput,
+  ListBankAccountsInput,
   ListCategoriesInput,
   ListMerchantsInput,
   QueryTransactionsInput,
@@ -132,6 +136,18 @@ export const sendMessage = action({
                   ctx,
                   userId,
                   toolCall.input as QueryTransactionsInput,
+                );
+              } else if (toolCall.name === 'get_category_summary') {
+                result = await executeGetCategorySummary(
+                  ctx,
+                  userId,
+                  toolCall.input as GetCategorySummaryInput,
+                );
+              } else if (toolCall.name === 'list_bank_accounts') {
+                result = await executeListBankAccounts(
+                  ctx,
+                  userId,
+                  toolCall.input as ListBankAccountsInput,
                 );
               } else {
                 result = `Unknown tool: ${toolCall.name}`;

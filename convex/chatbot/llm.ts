@@ -3,7 +3,13 @@
  */
 
 import OpenAI from 'openai';
-import { LIST_CATEGORIES_TOOL, LIST_MERCHANTS_TOOL, QUERY_TRANSACTIONS_TOOL } from './tools';
+import {
+  GET_CATEGORY_SUMMARY_TOOL,
+  LIST_BANK_ACCOUNTS_TOOL,
+  LIST_CATEGORIES_TOOL,
+  LIST_MERCHANTS_TOOL,
+  QUERY_TRANSACTIONS_TOOL,
+} from './tools';
 
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system' | 'tool';
@@ -48,7 +54,16 @@ Your role is to help users understand their financial data, analyze spending pat
 Available Tools:
 1. list_categories - Use this to find category IDs when users ask about spending on specific categories (e.g., "groceries", "restaurants", "utilities")
 2. list_merchants - Use this to find merchant IDs when users ask about specific stores or merchants (e.g., "Walmart", "Starbucks")
-3. query_transactions - Use this to query and aggregate transaction data with filters
+3. query_transactions - Use this to query individual transactions (e.g., "show me my top 5 expenses", "what did I buy at Walmart?", "list my recent transactions")
+4. get_category_summary - Use this to analyze spending BY CATEGORY (e.g., "top spending categories", "category breakdown", "where does my money go?")
+5. list_bank_accounts - Use this to show bank account balances (e.g., "what are my account balances?", "how much money do I have?", "show me my accounts")
+
+CRITICAL TOOL SELECTION RULES:
+- When users ask about CATEGORIES or CATEGORY BREAKDOWNS → ALWAYS use get_category_summary (this will show a chart)
+  Examples: "top 5 spending categories", "category breakdown", "where did I spend the most", "spending by category"
+
+- When users ask about SPECIFIC TRANSACTIONS or EXPENSES → use query_transactions (this will show a table)
+  Examples: "top 5 expenses", "my largest purchases", "show me transactions", "what did I spend at Target"
 
 Guidelines:
 - Be concise and friendly in your responses
@@ -63,27 +78,56 @@ Guidelines:
   - "last month" refers to the month before ${currentMonth}
 
 SPECIAL UI COMMANDS:
-When you want to display transactions in a visual table format (recommended for 3+ transactions), use this special command syntax:
 
+1. Transaction Table Command (for showing individual transactions):
 [RENDER:transaction-table:{"transactionIds":["id1","id2","id3"]}]
 
 Usage Guidelines:
 - Use this command when users ask to see specific transactions, top expenses, largest purchases, etc.
-- Place the command AFTER your explanatory text (e.g., "Here are your top 10 expenses for this month:\n[RENDER:transaction-table:{...}]")
+- Place the command AFTER your explanatory text
 - Include the transaction IDs returned from the query_transactions tool
-- The UI will render an interactive table with these transactions
-- You can still provide a summary in regular text before or after the command
 - Recommended for queries returning 3 or more transactions
-- For 1-2 transactions, formatting them in text is fine
 
-Example Response:
-"Here are your top 10 expenses for this month:
+2. Category Chart Command (for showing spending by category):
+[RENDER:category-chart:{"categoryIds":["id1","id2"],"chartType":"pie"|"bar"|"table","startDate":"...","endDate":"...","transactionType":"expense"|"income"|"all"}]
 
-[RENDER:transaction-table:{"transactionIds":["abc123","def456","ghi789"]}]
+IMPORTANT: The get_category_summary tool automatically generates this command for you. Do NOT manually construct this command.
 
-Your largest expense was $450.00 at Whole Foods Market. Would you like to see how this compares to last month?"
+Usage Guidelines:
+- Use get_category_summary tool when users ask about:
+  * "Show me my spending by category"
+  * "Category breakdown"
+  * "Where does my money go?"
+  * "Top spending categories"
+- The tool will automatically return the RENDER command with the right data
+- Choose chartType based on results:
+  * "pie" - for 2-6 categories (shows proportions nicely)
+  * "bar" - for 7+ categories (easier to compare many values)
+  * "table" - when users want detailed numbers or all data points
+- Displays: total amount, transaction count, percentage, and average per transaction
 
-Workflow Example:
+Example Response with Category Chart:
+"Here's your spending breakdown for January 2025:
+
+[RENDER:category-chart:{"categoryIds":["..."],"chartType":"pie","startDate":"2025-01-01T00:00:00.000Z","endDate":"2025-01-31T23:59:59.999Z","transactionType":"expense"}]
+
+Your top category was Groceries at $450.00. Would you like to see the individual transactions?"
+
+Workflow Examples:
+
+Example 1 - Category breakdown query (use get_category_summary):
+User: "Show me my top 5 spending categories"
+1. Call get_category_summary with chartType: "pie" or "bar"
+2. The tool will automatically return the chart command
+3. Provide a brief summary highlighting the top category
+
+Example 2 - Specific transaction query (use query_transactions):
+User: "Show me my top 5 expenses"
+1. Call query_transactions with aggregation: "top_expenses" and limit: 5
+2. The tool will automatically return both text list AND table command
+3. Provide context about the expenses
+
+Example 3 - Category-specific spending (query_transactions):
 User: "What did I spend on groceries?"
 1. Call list_categories with searchTerm: "groceries" to find the grocery category ID
 2. Call query_transactions with the categoryIds from step 1 and aggregation: "sum"
@@ -219,6 +263,22 @@ export async function callLLM(
           name: QUERY_TRANSACTIONS_TOOL.name,
           description: QUERY_TRANSACTIONS_TOOL.description,
           parameters: QUERY_TRANSACTIONS_TOOL.input_schema,
+        },
+      },
+      {
+        type: 'function',
+        function: {
+          name: GET_CATEGORY_SUMMARY_TOOL.name,
+          description: GET_CATEGORY_SUMMARY_TOOL.description,
+          parameters: GET_CATEGORY_SUMMARY_TOOL.input_schema,
+        },
+      },
+      {
+        type: 'function',
+        function: {
+          name: LIST_BANK_ACCOUNTS_TOOL.name,
+          description: LIST_BANK_ACCOUNTS_TOOL.description,
+          parameters: LIST_BANK_ACCOUNTS_TOOL.input_schema,
         },
       },
     ],
