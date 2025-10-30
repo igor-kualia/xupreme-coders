@@ -58,7 +58,7 @@
                   type="button"
                   (click)="openClearChatDialog(); $event.stopPropagation()"
                   [disabled]="messages().length === 0"
-                  class="text-muted-foreground hover:text-foreground focus-visible:ring-ring flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-30"
+                  class="text-muted-foreground hover:text-foreground focus-visible:ring-ring flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-30"
                   title="New conversation"
                 >
                   <ng-icon name="lucidePlus" size="16" />
@@ -76,7 +76,7 @@
                   type="button"
                   (click)="sendMessage(); $event.stopPropagation()"
                   [disabled]="!canSend()"
-                  class="bg-kb-primary text-primary-foreground hover:bg-kb-primary/90 focus-visible:ring-ring flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                  class="bg-kb-primary text-primary-foreground hover:bg-kb-primary/90 focus-visible:ring-ring flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <ng-icon name="lucideArrowUp" size="16" />
                 </button>
@@ -88,7 +88,7 @@
               <button
                 type="button"
                 (click)="sendQuickMessage('Show me my top spending categories this month')"
-                class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors"
+                class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors cursor-pointer"
               >
                 <span>📊</span>
                 <span>Category breakdown</span>
@@ -96,7 +96,7 @@
               <button
                 type="button"
                 (click)="sendQuickMessage('What are my account balances?')"
-                class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors"
+                class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors cursor-pointer"
               >
                 <span>💰</span>
                 <span>Check balances</span>
@@ -104,7 +104,7 @@
               <button
                 type="button"
                 (click)="sendQuickMessage('Show me my largest expenses this month')"
-                class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors"
+                class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors cursor-pointer"
               >
                 <span>🔍</span>
                 <span>Find transactions</span>
@@ -116,7 +116,7 @@
                     'Change this month\'s Starbucks transactions to Fast Food category'
                   )
                 "
-                class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors"
+                class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors cursor-pointer"
               >
                 <span>✏️</span>
                 <span>Update transactions</span>
@@ -124,7 +124,7 @@
               <button
                 type="button"
                 (click)="sendQuickMessage('I want to connect my bank account')"
-                class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors"
+                class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors cursor-pointer"
               >
                 <span>🏦</span>
                 <span>Connect account</span>
@@ -262,7 +262,7 @@
               type="button"
               (click)="openClearChatDialog(); $event.stopPropagation()"
               [disabled]="messages().length === 0"
-              class="text-muted-foreground hover:text-foreground focus-visible:ring-ring flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-30"
+              class="text-muted-foreground hover:text-foreground focus-visible:ring-ring flex h-8 w-8 shrink-0 items-center justify-center rounded-lg cursor-pointer transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-30"
               title="New conversation"
             >
               <ng-icon name="lucidePlus" size="16" />
@@ -280,7 +280,7 @@
               type="button"
               (click)="sendMessage(); $event.stopPropagation()"
               [disabled]="!canSend()"
-              class="bg-kb-primary text-primary-foreground hover:bg-kb-primary/90 focus-visible:ring-ring flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              class="bg-kb-primary text-primary-foreground hover:bg-kb-primary/90 focus-visible:ring-ring flex h-8 w-8 shrink-0 items-center cursor-pointer justify-center rounded-lg transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
             >
               <ng-icon name="lucideArrowUp" size="16" />
             </button>
@@ -291,7 +291,7 @@
             <button
               type="button"
               (click)="sendQuickMessage('Show me my top spending categories this month')"
-              class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors"
+              class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors cursor-pointer"
             >
               <span>📊</span>
               <span>Category breakdown</span>
@@ -299,7 +299,7 @@
             <button
               type="button"
               (click)="sendQuickMessage('What are my account balances?')"
-              class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors"
+              class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors cursor-pointer"
             >
               <span>💰</span>
               <span>Check balances</span>
@@ -307,7 +307,7 @@
             <button
               type="button"
               (click)="sendQuickMessage('Show me my largest expenses this month')"
-              class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors"
+              class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors cursor-pointer"
             >
               <span>🔍</span>
               <span>Find transactions</span>
@@ -317,7 +317,7 @@
               (click)="
                 sendQuickMessage('Change all my Starbucks transactions to Coffee Shops category')
               "
-              class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors"
+              class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors cursor-pointer"
             >
               <span>✏️</span>
               <span>Update transactions</span>
@@ -325,7 +325,7 @@
             <button
               type="button"
               (click)="sendQuickMessage('I want to connect my bank account')"
-              class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors"
+              class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors cursor-pointer"
             >
               <span>🏦</span>
               <span>Connect account</span>
@@ -339,7 +339,7 @@
     <button
       type="button"
       (click)="toggleAnalyticsPanel()"
-      class="bg-primary text-primary-foreground focus-visible:ring-ring fixed bottom-4 z-10 flex h-12 w-12 items-center justify-center rounded-full shadow-lg transition-all hover:scale-105 hover:shadow-xl focus-visible:ring-2 focus-visible:outline-none"
+      class="bg-primary text-primary-foreground focus-visible:ring-ring fixed bottom-4 z-10 flex h-12 w-12 items-center cursor-pointer justify-center rounded-full shadow-lg transition-all hover:scale-105 hover:shadow-xl focus-visible:ring-2 focus-visible:outline-none"
       [class.right-4]="!isAnalyticsPanelVisible()"
       [class.right-[calc(28rem+1rem)]]="isAnalyticsPanelVisible()"
       title="Toggle Analytics Panel"
