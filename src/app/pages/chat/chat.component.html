@@ -28,24 +28,65 @@
             <div class="space-y-2">
               <button
                 type="button"
-                (click)="sendQuickMessage('How much did I spend on groceries this month?')"
-                class="border-border bg-card text-foreground hover:bg-accent block w-full rounded-lg border px-4 py-3 text-left text-sm"
+                (click)="sendQuickMessage('Show me my top spending categories this month')"
+                class="border-border bg-card text-foreground hover:bg-accent block w-full rounded-lg border px-4 py-3 text-left text-sm transition-colors"
               >
-                "How much did I spend on groceries this month?"
+                <div class="flex items-start gap-2">
+                  <span class="text-lg">📊</span>
+                  <div class="flex-1">
+                    <div class="font-medium">Category breakdown</div>
+                    <div class="text-muted-foreground text-xs">
+                      See where your money goes with interactive charts
+                    </div>
+                  </div>
+                </div>
               </button>
               <button
                 type="button"
-                (click)="sendQuickMessage('Show me my top 5 expenses')"
-                class="border-border bg-card text-foreground hover:bg-accent block w-full rounded-lg border px-4 py-3 text-left text-sm"
+                (click)="sendQuickMessage('What are my account balances?')"
+                class="border-border bg-card text-foreground hover:bg-accent block w-full rounded-lg border px-4 py-3 text-left text-sm transition-colors"
               >
-                "Show me my top 5 expenses"
+                <div class="flex items-start gap-2">
+                  <span class="text-lg">💰</span>
+                  <div class="flex-1">
+                    <div class="font-medium">Check balances</div>
+                    <div class="text-muted-foreground text-xs">
+                      View all your bank account balances
+                    </div>
+                  </div>
+                </div>
               </button>
               <button
                 type="button"
-                (click)="sendQuickMessage('What are my spending trends this year?')"
-                class="border-border bg-card text-foreground hover:bg-accent block w-full rounded-lg border px-4 py-3 text-left text-sm"
+                (click)="sendQuickMessage('Show me my largest expenses this month')"
+                class="border-border bg-card text-foreground hover:bg-accent block w-full rounded-lg border px-4 py-3 text-left text-sm transition-colors"
               >
-                "What are my spending trends this year?"
+                <div class="flex items-start gap-2">
+                  <span class="text-lg">🔍</span>
+                  <div class="flex-1">
+                    <div class="font-medium">Find transactions</div>
+                    <div class="text-muted-foreground text-xs">
+                      Search and filter your spending history
+                    </div>
+                  </div>
+                </div>
+              </button>
+              <button
+                type="button"
+                (click)="
+                  sendQuickMessage('Change all my Starbucks transactions to Coffee Shops category')
+                "
+                class="border-border bg-card text-foreground hover:bg-accent block w-full rounded-lg border px-4 py-3 text-left text-sm transition-colors"
+              >
+                <div class="flex items-start gap-2">
+                  <span class="text-lg">✏️</span>
+                  <div class="flex-1">
+                    <div class="font-medium">Update transactions</div>
+                    <div class="text-muted-foreground text-xs">
+                      Edit categories, dates, or amounts in bulk
+                    </div>
+                  </div>
+                </div>
               </button>
             </div>
           </div>

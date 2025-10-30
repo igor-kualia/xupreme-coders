@@ -4,6 +4,7 @@
 
 import OpenAI from 'openai';
 import {
+  AUTO_CATEGORIZE_BY_MERCHANT_TOOL,
   CONFIRM_TRANSACTION_UPDATE_TOOL,
   GET_CATEGORY_SUMMARY_TOOL,
   LIST_BANK_ACCOUNTS_TOOL,
@@ -59,8 +60,9 @@ Available Tools:
 3. query_transactions - Use this to query individual transactions (e.g., "show me my top 5 expenses", "what did I buy at Walmart?", "list my recent transactions")
 4. get_category_summary - Use this to analyze spending BY CATEGORY (e.g., "top spending categories", "category breakdown", "where does my money go?")
 5. list_bank_accounts - Use this to show bank account balances (e.g., "what are my account balances?", "how much money do I have?", "show me my accounts")
-6. propose_transaction_update - Use this to PROPOSE changes to transactions and show a preview (STEP 1 of update process)
-7. confirm_transaction_update - Use this to EXECUTE approved transaction updates (STEP 2 of update process, only call after user confirms)
+6. auto_categorize_by_merchant - Use this to AUTONOMOUSLY categorize all uncategorized transactions from a merchant (NO confirmation needed)
+7. propose_transaction_update - Use this to PROPOSE changes to transactions and show a preview (STEP 1 of update process)
+8. confirm_transaction_update - Use this to EXECUTE approved transaction updates (STEP 2 of update process, only call after user confirms)
 
 CRITICAL TOOL SELECTION RULES:
 - When users ask about CATEGORIES or CATEGORY BREAKDOWNS → ALWAYS use get_category_summary (this will show a chart)
@@ -69,9 +71,79 @@ CRITICAL TOOL SELECTION RULES:
 - When users ask about SPECIFIC TRANSACTIONS or EXPENSES → use query_transactions (this will show a table)
   Examples: "top 5 expenses", "my largest purchases", "show me transactions", "what did I spend at Target"
 
-- When users want to EDIT or CHANGE transactions → use propose_transaction_update then wait for confirmation
-  Examples: "change this transaction to Groceries category", "update the date to March 15", "change all Starbucks to Coffee"
+- When users ask about UNCATEGORIZED TRANSACTIONS → use query_transactions with includeUncategorized: true
+  Examples: "show me uncategorized transactions", "what transactions need categorizing?", "list uncategorized expenses"
+  IMPORTANT: Set includeUncategorized: true to filter for only transactions without categories
+
+- When users want to CATEGORIZE UNCATEGORIZED transactions by merchant → use auto_categorize_by_merchant (NO confirmation needed)
+  Examples: "categorize all Starbucks as Coffee Shops", "set all Walmart to Groceries", "make Shell transactions Gas & Fuel"
+  IMPORTANT: This is AUTONOMOUS and happens immediately without confirmation
+
+- When users want to CHANGE EXISTING CATEGORIES on transactions → use propose_transaction_update then wait for confirmation
+  Examples: "change this transaction from Groceries to Dining Out", "move these Starbucks from Coffee to Dining"
   IMPORTANT: This is a TWO-STEP process requiring text-based confirmation from the user
+
+AUTONOMOUS CATEGORIZATION WORKFLOW (IMMEDIATE, NO CONFIRMATION):
+
+When users want to categorize UNCATEGORIZED transactions by merchant name, use this streamlined workflow:
+
+1. Identify the merchant name from the user's request (e.g., "Starbucks", "Walmart", "Shell")
+
+2. Identify the target category name:
+   - If the user specifies a category name, use that (e.g., "Coffee Shops", "Groceries")
+   - If unclear, you can use list_categories to suggest options and ask the user
+   - Category names can be simple (e.g., "Groceries") or include group (e.g., "[Food & Dining][Coffee Shops]")
+
+3. Call auto_categorize_by_merchant with:
+   {
+     merchantName: "Starbucks",
+     categoryName: "Coffee Shops"  // or "[Food & Dining][Coffee Shops]" for full path
+   }
+
+4. The tool will:
+   - Find the category by name
+   - Create/update a merchant-category mapping (cached for future auto-categorization)
+   - Apply the category to ALL uncategorized transactions from that merchant
+   - Return the count of transactions updated
+
+5. Share the success message with the user
+
+Example Flow:
+User: "Categorize all Starbucks as Coffee Shops"
+1. Call auto_categorize_by_merchant with merchantName: "Starbucks", categoryName: "Coffee Shops"
+2. Tool returns: "✓ Successfully categorized 15 transactions from Starbucks as Food & Dining > Coffee Shops."
+3. Respond to user with the success message
+
+IMPORTANT DISTINCTION:
+- Use auto_categorize_by_merchant for UNCATEGORIZED transactions (first-time categorization)
+- Use propose/confirm workflow for CHANGING EXISTING categories (editing already categorized transactions)
+
+QUERYING UNCATEGORIZED TRANSACTIONS:
+
+When users want to see which transactions need categorizing:
+
+1. Call query_transactions with:
+   {
+     includeUncategorized: true,
+     aggregation: "list",  // or "group_by_merchant" to see which merchants need categorizing
+     limit: 50  // optional, default is 50
+   }
+
+2. The tool will return only transactions that have no category assigned
+
+3. You can suggest categorizing them by merchant using auto_categorize_by_merchant
+
+Example Flow:
+User: "Show me my uncategorized transactions"
+1. Call query_transactions with includeUncategorized: true, aggregation: "list"
+2. Tool returns list of uncategorized transactions
+3. Respond: "You have 25 uncategorized transactions. The most common merchants are Starbucks (8 transactions), Walmart (5 transactions), and Shell (4 transactions). Would you like me to help categorize them?"
+
+You can also group uncategorized by merchant:
+User: "Which merchants have uncategorized transactions?"
+1. Call query_transactions with includeUncategorized: true, aggregation: "group_by_merchant"
+2. Tool returns merchants grouped by transaction count
+3. Suggest categories for the top merchants
 
 TRANSACTION EDITING WORKFLOW (TWO-STEP PROCESS):
 
@@ -364,6 +436,14 @@ export async function callLLM(
           name: LIST_BANK_ACCOUNTS_TOOL.name,
           description: LIST_BANK_ACCOUNTS_TOOL.description,
           parameters: LIST_BANK_ACCOUNTS_TOOL.input_schema,
+        },
+      },
+      {
+        type: 'function',
+        function: {
+          name: AUTO_CATEGORIZE_BY_MERCHANT_TOOL.name,
+          description: AUTO_CATEGORIZE_BY_MERCHANT_TOOL.description,
+          parameters: AUTO_CATEGORIZE_BY_MERCHANT_TOOL.input_schema,
         },
       },
       {
