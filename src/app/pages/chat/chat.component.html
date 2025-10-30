@@ -1,267 +1,319 @@
-<div class="flex h-[calc(100vh-4rem-1px)] flex-col">
-  <div #messagesContainer class="flex flex-1 flex-col-reverse overflow-y-auto px-4 py-6">
-    @if (!isConversationLoaded()) {
-      <div class="flex h-full items-center justify-center">
-        <div class="text-center">
-          <div class="mb-4 flex items-center justify-center space-x-2">
-            <div
-              class="bg-foreground h-3 w-3 animate-bounce rounded-full [animation-delay:-0.3s]"
-            ></div>
-            <div
-              class="bg-foreground h-3 w-3 animate-bounce rounded-full [animation-delay:-0.15s]"
-            ></div>
-            <div class="bg-foreground h-3 w-3 animate-bounce rounded-full"></div>
+<div
+  class="grid h-[calc(100vh-4rem-1px)]"
+  [style.grid-template-columns]="isAnalyticsPanelVisible() ? '1fr auto' : '1fr'"
+>
+  <!-- Chat Column -->
+  <div class="flex h-[calc(100vh-4rem-1px)] flex-col relative">
+    <div #messagesContainer class="flex flex-1 flex-col-reverse overflow-y-auto px-4 py-6">
+      @if (!isConversationLoaded()) {
+        <div class="flex h-full items-center justify-center">
+          <div class="text-center">
+            <div class="mb-4 flex items-center justify-center space-x-2">
+              <div
+                class="bg-foreground h-3 w-3 animate-bounce rounded-full [animation-delay:-0.3s]"
+              ></div>
+              <div
+                class="bg-foreground h-3 w-3 animate-bounce rounded-full [animation-delay:-0.15s]"
+              ></div>
+              <div class="bg-foreground h-3 w-3 animate-bounce rounded-full"></div>
+            </div>
+            <p class="text-muted-foreground text-sm">Loading conversation...</p>
           </div>
-          <p class="text-muted-foreground text-sm">Loading conversation...</p>
         </div>
-      </div>
-    } @else if (
-      (showEmptyState() && !hasUserSentMessage()) || (isTransitioning() && !isFadingIn())
-    ) {
-      <!-- Empty state: input card centered with suggestions below -->
-      <div
-        [class]="
-          isTransitioning() && !isFadingIn()
-            ? 'fade-out flex h-full items-center justify-center'
-            : 'flex h-full items-center justify-center'
-        "
-      >
-        <div class="mx-auto w-full max-w-2xl px-4">
-          <!-- Input card -->
-          <div class="mx-auto max-w-3xl">
-            @if (error()) {
-              <div class="bg-destructive/10 text-destructive mb-3 rounded-lg px-4 py-2 text-sm">
-                {{ error() }}
+      } @else if (
+        (showEmptyState() && !hasUserSentMessage()) || (isTransitioning() && !isFadingIn())
+      ) {
+        <!-- Empty state: input card centered with suggestions below -->
+        <div
+          [class]="
+            isTransitioning() && !isFadingIn()
+              ? 'fade-out flex h-full items-center justify-center'
+              : 'flex h-full items-center justify-center'
+          "
+        >
+          <div class="mx-auto w-full max-w-2xl px-4">
+            <!-- Input card -->
+            <div class="mx-auto max-w-3xl">
+              @if (error()) {
+                <div class="bg-destructive/10 text-destructive mb-3 rounded-lg px-4 py-2 text-sm">
+                  {{ error() }}
+                </div>
+              }
+              <div
+                class="border-border bg-card flex cursor-text items-center gap-2 rounded-2xl border px-4 py-2 shadow-sm"
+                (click)="focusTextarea($event)"
+              >
+                <button
+                  type="button"
+                  (click)="openClearChatDialog(); $event.stopPropagation()"
+                  [disabled]="messages().length === 0"
+                  class="text-muted-foreground hover:text-foreground flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-30"
+                  title="New conversation"
+                >
+                  <ng-icon name="lucidePlus" size="16" />
+                </button>
+                <textarea
+                  #messageTextarea
+                  [(ngModel)]="messageInput"
+                  (keydown)="handleKeyPress($event)"
+                  placeholder="Ask me about your finances..."
+                  rows="1"
+                  class="text-foreground placeholder-muted-foreground flex-1 resize-none overflow-y-auto bg-transparent text-sm focus:outline-none"
+                  style="min-height: 40px; max-height: 200px; padding: 10px 0; line-height: 1.5"
+                ></textarea>
+                <button
+                  type="button"
+                  (click)="sendMessage(); $event.stopPropagation()"
+                  [disabled]="!canSend()"
+                  class="bg-kb-primary text-primary-foreground hover:bg-kb-primary/90 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <ng-icon name="lucideArrowUp" size="16" />
+                </button>
               </div>
-            }
-            <div
-              class="border-border bg-card flex cursor-text items-center gap-2 rounded-2xl border px-4 py-2 shadow-sm"
-              (click)="focusTextarea($event)"
-            >
+            </div>
+
+            <!-- Suggestions below input -->
+            <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
               <button
                 type="button"
-                (click)="openClearChatDialog(); $event.stopPropagation()"
-                [disabled]="messages().length === 0"
-                class="text-muted-foreground hover:text-foreground flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-30"
-                title="New conversation"
+                (click)="sendQuickMessage('Show me my top spending categories this month')"
+                class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors"
               >
-                <ng-icon name="lucidePlus" size="16" />
+                <span>📊</span>
+                <span>Category breakdown</span>
               </button>
-              <textarea
-                #messageTextarea
-                [(ngModel)]="messageInput"
-                (keydown)="handleKeyPress($event)"
-                placeholder="Ask me about your finances..."
-                rows="1"
-                class="text-foreground placeholder-muted-foreground flex-1 resize-none overflow-y-auto bg-transparent text-sm focus:outline-none"
-                style="min-height: 40px; max-height: 200px; padding: 10px 0; line-height: 1.5"
-              ></textarea>
               <button
                 type="button"
-                (click)="sendMessage(); $event.stopPropagation()"
-                [disabled]="!canSend()"
-                class="bg-kb-primary text-primary-foreground hover:bg-kb-primary/90 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                (click)="sendQuickMessage('What are my account balances?')"
+                class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors"
               >
-                <ng-icon name="lucideArrowUp" size="16" />
+                <span>💰</span>
+                <span>Check balances</span>
+              </button>
+              <button
+                type="button"
+                (click)="sendQuickMessage('Show me my largest expenses this month')"
+                class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors"
+              >
+                <span>🔍</span>
+                <span>Find transactions</span>
+              </button>
+              <button
+                type="button"
+                (click)="
+                  sendQuickMessage('Change all my Starbucks transactions to Coffee Shops category')
+                "
+                class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors"
+              >
+                <span>✏️</span>
+                <span>Update transactions</span>
+              </button>
+              <button
+                type="button"
+                (click)="sendQuickMessage('I want to connect my bank account')"
+                class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors"
+              >
+                <span>🏦</span>
+                <span>Connect account</span>
               </button>
             </div>
           </div>
-
-          <!-- Suggestions below input -->
-          <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
-            <button
-              type="button"
-              (click)="sendQuickMessage('Show me my top spending categories this month')"
-              class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors"
-            >
-              <span>📊</span>
-              <span>Category breakdown</span>
-            </button>
-            <button
-              type="button"
-              (click)="sendQuickMessage('What are my account balances?')"
-              class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors"
-            >
-              <span>💰</span>
-              <span>Check balances</span>
-            </button>
-            <button
-              type="button"
-              (click)="sendQuickMessage('Show me my largest expenses this month')"
-              class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors"
-            >
-              <span>🔍</span>
-              <span>Find transactions</span>
-            </button>
-            <button
-              type="button"
-              (click)="
-                sendQuickMessage('Change all my Starbucks transactions to Coffee Shops category')
-              "
-              class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors"
-            >
-              <span>✏️</span>
-              <span>Update transactions</span>
-            </button>
-            <button
-              type="button"
-              (click)="sendQuickMessage('I want to connect my bank account')"
-              class="border-border bg-card text-foreground hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors"
-            >
-              <span>🏦</span>
-              <span>Connect account</span>
-            </button>
-          </div>
         </div>
-      </div>
-    } @else if (isFadingIn() || (messages().length > 0 && !isTransitioning())) {
+      } @else if (isFadingIn() || (messages().length > 0 && !isTransitioning())) {
+        <div
+          [class]="
+            isFadingIn() && messages().length === 0
+              ? 'fade-in mx-auto flex w-full max-w-3xl flex-col gap-4'
+              : 'mx-auto flex w-full max-w-3xl flex-col gap-4'
+          "
+        >
+          @for (message of messages(); track message._id) {
+            @if (shouldShowMessage(message._id, message.role)) {
+              @if (message.role === 'user') {
+                <div class="flex w-full justify-end">
+                  <div
+                    class="bg-kb-primary text-primary-foreground max-w-[80%] rounded-2xl px-4 py-3"
+                  >
+                    <div class="text-sm break-words whitespace-pre-wrap">
+                      {{ message.content }}
+                    </div>
+                  </div>
+                </div>
+              } @else {
+                <div class="flex w-full justify-start">
+                  <div class="max-w-[85%] min-h-5">
+                    @for (
+                      segment of parseMessageSegments(
+                        message._id,
+                        getDisplayContent(message._id, message.content)
+                      );
+                      track $index
+                    ) {
+                      @if (segment.type === 'text') {
+                        <div
+                          class="prose text-sm"
+                          [innerHTML]="getRenderedMarkdown(segment.content)"
+                        ></div>
+                      } @else if (segment.type === 'component' && segment.command) {
+                        @if (segment.command.type === 'transaction-table') {
+                          <app-chat-transaction-table
+                            [transactionIds]="
+                              asTransactionTableCommand(segment.command.data).transactionIds
+                            "
+                          />
+                        } @else if (segment.command.type === 'category-chart') {
+                          <app-chat-category-chart
+                            [categoryIds]="asCategoryChartCommand(segment.command.data).categoryIds"
+                            [chartType]="asCategoryChartCommand(segment.command.data).chartType"
+                            [startDate]="asCategoryChartCommand(segment.command.data).startDate"
+                            [endDate]="asCategoryChartCommand(segment.command.data).endDate"
+                            [transactionType]="
+                              asCategoryChartCommand(segment.command.data).transactionType
+                            "
+                          />
+                        } @else if (segment.command.type === 'bank-account-table') {
+                          <app-chat-bank-account-table
+                            [accountIds]="
+                              asBankAccountTableCommand(segment.command.data).accountIds
+                            "
+                          />
+                        } @else if (segment.command.type === 'transaction-edit-preview') {
+                          <app-chat-transaction-edit-preview
+                            [transactionIds]="
+                              asTransactionEditPreviewCommand(segment.command.data).transactionIds
+                            "
+                            [updates]="
+                              asTransactionEditPreviewCommand(segment.command.data).updates
+                            "
+                          />
+                        } @else if (segment.command.type === 'account-connection-prompt') {
+                          <app-chat-account-connection-prompt
+                            [reason]="asAccountConnectionPromptCommand(segment.command.data).reason"
+                          />
+                        }
+                      }
+                    }
+                  </div>
+                </div>
+              }
+            }
+          }
+          @for (queuedMessage of messageQueue(); track $index) {
+            <div class="flex w-full justify-end opacity-50">
+              <div class="bg-kb-primary text-primary-foreground max-w-[80%] rounded-2xl px-4 py-3">
+                <div class="text-sm break-words whitespace-pre-wrap">
+                  {{ queuedMessage }}
+                </div>
+              </div>
+            </div>
+          }
+          @if (isLoading()) {
+            <div class="flex w-full justify-start">
+              <div class="max-w-[85%]">
+                <div class="flex h-5 items-center space-x-2">
+                  <div
+                    class="bg-foreground h-2 w-2 animate-bounce rounded-full [animation-delay:-0.3s]"
+                  ></div>
+                  <div
+                    class="bg-foreground h-2 w-2 animate-bounce rounded-full [animation-delay:-0.15s]"
+                  ></div>
+                  <div class="bg-foreground h-2 w-2 animate-bounce rounded-full"></div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Input Area (shown only when fading in or when there are messages and not transitioning) -->
+    @if (isFadingIn() || (messages().length > 0 && !isTransitioning())) {
       <div
         [class]="
           isFadingIn() && messages().length === 0
-            ? 'fade-in mx-auto flex w-full max-w-3xl flex-col gap-4'
-            : 'mx-auto flex w-full max-w-3xl flex-col gap-4'
+            ? 'fade-in bg-background px-4 py-4'
+            : 'bg-background px-4 py-4'
         "
       >
-        @for (message of messages(); track message._id) {
-          @if (shouldShowMessage(message._id, message.role)) {
-            @if (message.role === 'user') {
-              <div class="flex w-full justify-end">
-                <div class="bg-kb-primary text-primary-foreground max-w-[80%] rounded-2xl px-4 py-3">
-                  <div class="text-sm break-words whitespace-pre-wrap">
-                    {{ message.content }}
-                  </div>
-                </div>
-              </div>
-            } @else {
-              <div class="flex w-full justify-start">
-                <div class="max-w-[85%] min-h-5">
-                  @for (
-                    segment of parseMessageSegments(
-                      message._id,
-                      getDisplayContent(message._id, message.content)
-                    );
-                    track $index
-                  ) {
-                    @if (segment.type === 'text') {
-                      <div
-                        class="prose text-sm"
-                        [innerHTML]="getRenderedMarkdown(segment.content)"
-                      ></div>
-                    } @else if (segment.type === 'component' && segment.command) {
-                      @if (segment.command.type === 'transaction-table') {
-                        <app-chat-transaction-table
-                          [transactionIds]="
-                            asTransactionTableCommand(segment.command.data).transactionIds
-                          "
-                        />
-                      } @else if (segment.command.type === 'category-chart') {
-                        <app-chat-category-chart
-                          [categoryIds]="asCategoryChartCommand(segment.command.data).categoryIds"
-                          [chartType]="asCategoryChartCommand(segment.command.data).chartType"
-                          [startDate]="asCategoryChartCommand(segment.command.data).startDate"
-                          [endDate]="asCategoryChartCommand(segment.command.data).endDate"
-                          [transactionType]="
-                            asCategoryChartCommand(segment.command.data).transactionType
-                          "
-                        />
-                      } @else if (segment.command.type === 'bank-account-table') {
-                        <app-chat-bank-account-table
-                          [accountIds]="asBankAccountTableCommand(segment.command.data).accountIds"
-                        />
-                      } @else if (segment.command.type === 'transaction-edit-preview') {
-                        <app-chat-transaction-edit-preview
-                          [transactionIds]="
-                            asTransactionEditPreviewCommand(segment.command.data).transactionIds
-                          "
-                          [updates]="asTransactionEditPreviewCommand(segment.command.data).updates"
-                        />
-                      } @else if (segment.command.type === 'account-connection-prompt') {
-                        <app-chat-account-connection-prompt
-                          [reason]="asAccountConnectionPromptCommand(segment.command.data).reason"
-                        />
-                      }
-                    }
-                  }
-                </div>
-              </div>
-            }
+        <div class="mx-auto max-w-3xl">
+          @if (error()) {
+            <div class="bg-destructive/10 text-destructive mb-3 rounded-lg px-4 py-2 text-sm">
+              {{ error() }}
+            </div>
           }
-        }
-        @for (queuedMessage of messageQueue(); track $index) {
-          <div class="flex w-full justify-end opacity-50">
-            <div class="bg-kb-primary text-primary-foreground max-w-[80%] rounded-2xl px-4 py-3">
-              <div class="text-sm break-words whitespace-pre-wrap">
-                {{ queuedMessage }}
-              </div>
-            </div>
-          </div>
-        }
-        @if (isLoading()) {
-          <div class="flex w-full justify-start">
-            <div class="max-w-[85%]">
-              <div class="flex h-5 items-center space-x-2">
-                <div
-                  class="bg-foreground h-2 w-2 animate-bounce rounded-full [animation-delay:-0.3s]"
-                ></div>
-                <div
-                  class="bg-foreground h-2 w-2 animate-bounce rounded-full [animation-delay:-0.15s]"
-                ></div>
-                <div class="bg-foreground h-2 w-2 animate-bounce rounded-full"></div>
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-    }
-  </div>
-
-  <!-- Input Area (shown only when fading in or when there are messages and not transitioning) -->
-  @if (isFadingIn() || (messages().length > 0 && !isTransitioning())) {
-    <div
-      [class]="
-        isFadingIn() && messages().length === 0
-          ? 'fade-in bg-background px-4 py-4'
-          : 'bg-background px-4 py-4'
-      "
-    >
-      <div class="mx-auto max-w-3xl">
-        @if (error()) {
-          <div class="bg-destructive/10 text-destructive mb-3 rounded-lg px-4 py-2 text-sm">
-            {{ error() }}
-          </div>
-        }
-        <div
-          class="border-border bg-card flex cursor-text items-center gap-2 rounded-2xl border px-4 py-2 shadow-sm"
-          (click)="focusTextarea($event)"
-        >
-          <button
-            type="button"
-            (click)="openClearChatDialog(); $event.stopPropagation()"
-            [disabled]="messages().length === 0"
-            class="text-muted-foreground hover:text-foreground flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-30"
-            title="New conversation"
+          <div
+            class="border-border bg-card flex cursor-text items-center gap-2 rounded-2xl border px-4 py-2 shadow-sm"
+            (click)="focusTextarea($event)"
           >
-            <ng-icon name="lucidePlus" size="16" />
-          </button>
-          <textarea
-            #messageTextarea
-            [(ngModel)]="messageInput"
-            (keydown)="handleKeyPress($event)"
-            placeholder="Ask me about your finances..."
-            rows="1"
-            class="text-foreground placeholder-muted-foreground flex-1 resize-none overflow-y-auto bg-transparent text-sm focus:outline-none"
-            style="min-height: 40px; max-height: 200px; padding: 10px 0; line-height: 1.5"
-          ></textarea>
-          <button
-            type="button"
-            (click)="sendMessage(); $event.stopPropagation()"
-            [disabled]="!canSend()"
-            class="bg-kb-primary text-primary-foreground hover:bg-kb-primary/90 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <ng-icon name="lucideArrowUp" size="16" />
-          </button>
+            <button
+              type="button"
+              (click)="openClearChatDialog(); $event.stopPropagation()"
+              [disabled]="messages().length === 0"
+              class="text-muted-foreground hover:text-foreground flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-30"
+              title="New conversation"
+            >
+              <ng-icon name="lucidePlus" size="16" />
+            </button>
+            <textarea
+              #messageTextarea
+              [(ngModel)]="messageInput"
+              (keydown)="handleKeyPress($event)"
+              placeholder="Ask me about your finances..."
+              rows="1"
+              class="text-foreground placeholder-muted-foreground flex-1 resize-none overflow-y-auto bg-transparent text-sm focus:outline-none"
+              style="min-height: 40px; max-height: 200px; padding: 10px 0; line-height: 1.5"
+            ></textarea>
+            <button
+              type="button"
+              (click)="sendMessage(); $event.stopPropagation()"
+              [disabled]="!canSend()"
+              class="bg-kb-primary text-primary-foreground hover:bg-kb-primary/90 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <ng-icon name="lucideArrowUp" size="16" />
+            </button>
+          </div>
         </div>
       </div>
+    }
+
+    <!-- Analytics Toggle Button -->
+    <button
+      type="button"
+      (click)="toggleAnalyticsPanel()"
+      class="fixed bottom-20 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all hover:scale-105 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      [class.right-4]="!isAnalyticsPanelVisible()"
+      [class.right-[calc(28rem+1rem)]]="isAnalyticsPanelVisible()"
+      title="Toggle Analytics Panel"
+    >
+      @if (isAnalyticsPanelVisible()) {
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+          />
+        </svg>
+      } @else {
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+          />
+        </svg>
+      }
+    </button>
+  </div>
+
+  <!-- Analytics Panel (Right Side) -->
+  @if (isAnalyticsPanelVisible()) {
+    <div class="h-[calc(100vh-4rem-1px)] w-full max-w-md border-l border-border">
+      <app-analytics-panel
+        [selectedMessageId]="selectedMessageId()"
+        (messageSelected)="onMessageSelected($event)"
+      />
     </div>
   }
 </div>

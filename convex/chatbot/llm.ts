@@ -38,6 +38,12 @@ export interface LLMResponse {
   content: string;
   toolCalls?: ToolCall[];
   finishReason: string;
+  usage?: {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+  };
+  rawResponse?: OpenAI.ChatCompletion;
 }
 
 /**
@@ -178,8 +184,15 @@ TRANSACTION EDITING WORKFLOW (TWO-STEP PROCESS):
 
 STEP 1 - PROPOSE CHANGES:
 1. When a user wants to edit transactions, first identify which transactions to update:
+   - If they mention "most recent [merchant]" (e.g., "most recent McDonald's transaction"):
+     a) Call list_merchants to find the merchant ID
+     b) Call query_transactions with merchantIds filter and limit: 1 to get the specific transaction
+     c) IMPORTANT: Extract the transaction ID from the response. Transaction IDs are in the format "[ID: txn_xyz...]"
+     d) Use the specific transactionIds (NOT merchantIds) in propose_transaction_update
+   - If they mention "all [merchant]" (e.g., "all Starbucks transactions"):
+     a) Call list_merchants to get the merchant ID
+     b) Use merchantIds filter in propose_transaction_update
    - If they mention specific transactions, you may need to use query_transactions first to find transaction IDs
-   - If they mention a merchant (e.g., "all Starbucks"), use list_merchants to get the merchant ID
    - If they mention a category filter, use list_categories to get the category ID
 
 2. For the new category (if changing category), use list_categories to find the correct category ID
@@ -208,7 +221,7 @@ STEP 2 - EXECUTE AFTER CONFIRMATION:
    - Ask if they'd like to modify the request or do something else
    - DO NOT call confirm_transaction_update
 
-Example Transaction Update Flow:
+Example Transaction Update Flow #1 - All transactions from a merchant:
 User: "Change all my Starbucks transactions to the Coffee category"
 1. Call list_merchants with searchTerm: "Starbucks" → get merchant ID: "merchant_123"
 2. Call list_categories with searchTerm: "Coffee" → get category ID: "category_456"
@@ -226,6 +239,33 @@ User: "Change all my Starbucks transactions to the Coffee category"
      updates: { categoryId: "category_456" }
    }
 8. Respond: "✓ Successfully updated 5 transactions to the Coffee category!"
+
+Example Transaction Update Flow #2 - Most recent transaction from a merchant:
+User: "Update the most recent McDonald's transaction to be coffee shops category"
+1. Call list_merchants with searchTerm: "McDonald's" → get merchant ID: "merchant_456"
+2. Call query_transactions with:
+   {
+     merchantIds: ["merchant_456"],
+     aggregation: "list",
+     limit: 1
+   }
+   → Response: "Found 1 transaction(s):\n\n- [ID: txn_789] Oct 28, 2025: McDonalds | -$9.12 | Food & Dining > Fast Food"
+   → Extract the transaction ID from [ID: ...]: "txn_789"
+3. Call list_categories with searchTerm: "Coffee" → get category ID: "category_123"
+4. Call propose_transaction_update with:
+   {
+     transactionIds: ["txn_789"],
+     proposedUpdates: { categoryId: "category_123" }
+   }
+5. System shows preview component in chat
+6. Assistant responds: "I found 1 transaction that will be updated to Coffee Shops category. [preview shown above] Do you want to proceed with these changes? Please respond with yes or no."
+7. User responds: "yes"
+8. Call confirm_transaction_update with:
+   {
+     transactionIds: ["txn_789"],
+     updates: { categoryId: "category_123" }
+   }
+9. Respond: "✓ Successfully updated 1 transaction to the Coffee Shops category!"
 
 Guidelines:
 - Be concise and friendly in your responses
@@ -524,9 +564,20 @@ export async function callLLM(
     }
   }
 
+  // Extract token usage if available
+  const usage = response.usage
+    ? {
+        promptTokens: response.usage.prompt_tokens,
+        completionTokens: response.usage.completion_tokens,
+        totalTokens: response.usage.total_tokens,
+      }
+    : undefined;
+
   return {
     content: textContent,
     toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
     finishReason: choice.finish_reason || 'stop',
+    usage,
+    rawResponse: response,
   };
 }

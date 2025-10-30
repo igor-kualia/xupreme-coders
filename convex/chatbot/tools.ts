@@ -1318,7 +1318,7 @@ async function formatTransactionList(
         ? await getCategoryNameForAction(ctx, t.categoryId)
         : 'Uncategorized';
 
-      return `- ${date}: ${merchant} | ${amount} | ${category}`;
+      return `- [ID: ${t._id}] ${date}: ${merchant} | ${amount} | ${category}`;
     }),
   );
 
@@ -1482,7 +1482,7 @@ async function formatTopExpenses(
       const date = formatDate(t.date);
       const merchant = t.merchantId ? await getMerchantNameForAction(ctx, t.merchantId) : 'Unknown';
 
-      return `- ${date}: ${merchant} | ${amount}`;
+      return `- [ID: ${t._id}] ${date}: ${merchant} | ${amount}`;
     }),
   );
 
@@ -1533,7 +1533,7 @@ async function formatTopIncome(
       const date = formatDate(t.date);
       const merchant = t.merchantId ? await getMerchantNameForAction(ctx, t.merchantId) : 'Unknown';
 
-      return `- ${date}: ${merchant} | ${amount}`;
+      return `- [ID: ${t._id}] ${date}: ${merchant} | ${amount}`;
     }),
   );
 
