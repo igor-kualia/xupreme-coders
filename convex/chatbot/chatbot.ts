@@ -7,11 +7,19 @@ import { internal } from '../_generated/api';
 import { action, internalMutation, internalQuery, mutation, query } from '../_generated/server';
 import { callLLM, ToolResult } from './llm';
 import {
+  executeConfirmTransactionUpdate,
+  executeGetCategorySummary,
+  executeListBankAccounts,
   executeListCategories,
   executeListMerchants,
+  executeProposeTransactionUpdate,
   executeQueryTransactions,
+  ConfirmTransactionUpdateInput,
+  GetCategorySummaryInput,
+  ListBankAccountsInput,
   ListCategoriesInput,
   ListMerchantsInput,
+  ProposeTransactionUpdateInput,
   QueryTransactionsInput,
 } from './tools';
 
@@ -132,6 +140,30 @@ export const sendMessage = action({
                   ctx,
                   userId,
                   toolCall.input as QueryTransactionsInput,
+                );
+              } else if (toolCall.name === 'get_category_summary') {
+                result = await executeGetCategorySummary(
+                  ctx,
+                  userId,
+                  toolCall.input as GetCategorySummaryInput,
+                );
+              } else if (toolCall.name === 'list_bank_accounts') {
+                result = await executeListBankAccounts(
+                  ctx,
+                  userId,
+                  toolCall.input as ListBankAccountsInput,
+                );
+              } else if (toolCall.name === 'propose_transaction_update') {
+                result = await executeProposeTransactionUpdate(
+                  ctx,
+                  userId,
+                  toolCall.input as ProposeTransactionUpdateInput,
+                );
+              } else if (toolCall.name === 'confirm_transaction_update') {
+                result = await executeConfirmTransactionUpdate(
+                  ctx,
+                  userId,
+                  toolCall.input as ConfirmTransactionUpdateInput,
                 );
               } else {
                 result = `Unknown tool: ${toolCall.name}`;

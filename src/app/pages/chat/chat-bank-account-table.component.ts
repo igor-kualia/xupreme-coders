@@ -17,11 +17,11 @@ import { Id } from '../../../../convex/_generated/dataModel';
 import { FunctionReturnType } from 'convex/server';
 import { HlmSkeleton } from '../../lib/ui/ui-skeleton-helm/src';
 
-type TransactionsResponse = FunctionReturnType<typeof api.transactions.getTransactionsByIds>;
-type Transaction = TransactionsResponse[number];
+type BankAccountsResponse = FunctionReturnType<typeof api.bankAccounts.getBankAccountsByIds>;
+type BankAccount = BankAccountsResponse[number];
 
 @Component({
-  selector: 'app-chat-transaction-table',
+  selector: 'app-chat-bank-account-table',
   imports: [CommonModule, HlmSkeleton],
   template: `
     <div class="my-4 overflow-hidden rounded-lg border border-border bg-card">
@@ -30,21 +30,19 @@ type Transaction = TransactionsResponse[number];
           <table class="w-full text-sm">
             <thead class="sticky top-0 z-10 border-b border-border bg-muted">
               <tr>
-                <th class="px-4 py-3 text-left font-medium">Date</th>
-                <th class="px-4 py-3 text-left font-medium">Merchant</th>
-                <th class="px-4 py-3 text-left font-medium">Category</th>
-                <th class="px-4 py-3 text-left font-medium">Account</th>
-                <th class="px-4 py-3 text-right font-medium">Amount</th>
+                <th class="px-4 py-3 text-left font-medium">Institution</th>
+                <th class="px-4 py-3 text-left font-medium">Account Name</th>
+                <th class="px-4 py-3 text-left font-medium">Type</th>
+                <th class="px-4 py-3 text-right font-medium">Balance</th>
               </tr>
             </thead>
             <tbody>
               @for (_ of skeletonArray(); track $index) {
                 <tr class="border-b border-border last:border-0">
-                  <td class="px-4 py-3"><hlm-skeleton class="h-4 w-20" /></td>
                   <td class="px-4 py-3"><hlm-skeleton class="h-4 w-32" /></td>
+                  <td class="px-4 py-3"><hlm-skeleton class="h-4 w-40" /></td>
                   <td class="px-4 py-3"><hlm-skeleton class="h-4 w-24" /></td>
-                  <td class="px-4 py-3"><hlm-skeleton class="h-4 w-28" /></td>
-                  <td class="px-4 py-3 text-right"><hlm-skeleton class="ml-auto h-4 w-16" /></td>
+                  <td class="px-4 py-3 text-right"><hlm-skeleton class="ml-auto h-4 w-20" /></td>
                 </tr>
               }
             </tbody>
@@ -59,54 +57,69 @@ type Transaction = TransactionsResponse[number];
         <div class="p-4 text-sm text-destructive">
           {{ error() }}
         </div>
-      } @else if (transactions().length === 0) {
-        <div class="p-4 text-sm text-muted-foreground">No transactions found</div>
+      } @else if (accounts().length === 0) {
+        <div class="p-4 text-sm text-muted-foreground">No bank accounts found</div>
       } @else {
         <div #contentContainer class="relative max-h-[500px] overflow-x-auto overflow-y-auto">
           <table class="w-full text-sm">
             <thead class="sticky top-0 z-10 border-b border-border bg-muted">
               <tr>
-                <th class="px-4 py-3 text-left font-medium">Date</th>
-                <th class="px-4 py-3 text-left font-medium">Merchant</th>
-                <th class="px-4 py-3 text-left font-medium">Category</th>
-                <th class="px-4 py-3 text-left font-medium">Account</th>
-                <th class="px-4 py-3 text-right font-medium">Amount</th>
+                <th class="px-4 py-3 text-left font-medium">Institution</th>
+                <th class="px-4 py-3 text-left font-medium">Account Name</th>
+                <th class="px-4 py-3 text-left font-medium">Type</th>
+                <th class="px-4 py-3 text-right font-medium">Balance</th>
               </tr>
             </thead>
             <tbody>
-              @for (transaction of transactions(); track transaction._id) {
+              @for (account of accounts(); track account._id) {
                 <tr class="border-b border-border last:border-0 hover:bg-muted/50">
-                  <td class="px-4 py-3 text-muted-foreground">
-                    {{ formatDate(transaction.date) }}
-                  </td>
                   <td class="px-4 py-3">
                     <div class="flex items-center gap-2">
-                      @if (transaction.merchant?.logoUrl) {
+                      @if (account.institutionLogoUrl) {
                         <img
-                          [src]="transaction.merchant?.logoUrl"
-                          [alt]="transaction.merchant?.name"
+                          [src]="account.institutionLogoUrl"
+                          [alt]="account.institutionName || 'Bank'"
                           class="h-6 w-6 rounded object-contain"
                         />
                       }
-                      <span>{{ transaction.merchant?.name || 'Unknown' }}</span>
+                      <span>{{ account.institutionName || 'Unknown Bank' }}</span>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="flex flex-col">
+                      <span>{{ account.name }}</span>
+                      @if (account.accountNumberMask) {
+                        <span class="text-xs text-muted-foreground"
+                          >(...{{ account.accountNumberMask }})</span
+                        >
+                      }
                     </div>
                   </td>
                   <td class="px-4 py-3 text-muted-foreground">
-                    {{ transaction.category?.name || 'Uncategorized' }}
-                  </td>
-                  <td class="px-4 py-3 text-muted-foreground">
-                    {{ transaction.bankAccount?.name || 'Unknown' }}
+                    {{ formatAccountType(account.accountType) }}
                   </td>
                   <td
                     class="px-4 py-3 text-right font-medium"
-                    [class.text-green-600]="Number(transaction.amount) >= 0"
-                    [class.text-red-600]="Number(transaction.amount) < 0"
+                    [class.text-green-600]="getBalance(account) >= 0"
+                    [class.text-red-600]="getBalance(account) < 0"
                   >
-                    {{ formatAmount(transaction.amount) }}
+                    {{ formatAmount(account.currentBalance) }}
                   </td>
                 </tr>
               }
             </tbody>
+            <tfoot class="border-t border-border bg-muted/50">
+              <tr>
+                <td colspan="3" class="px-4 py-3 text-right font-medium">Total Balance:</td>
+                <td
+                  class="px-4 py-3 text-right font-bold"
+                  [class.text-green-600]="totalBalance() >= 0"
+                  [class.text-red-600]="totalBalance() < 0"
+                >
+                  {{ formatAmount(totalBalance()) }}
+                </td>
+              </tr>
+            </tfoot>
           </table>
           @if (isContentScrollable()) {
             <div
@@ -119,22 +132,29 @@ type Transaction = TransactionsResponse[number];
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ChatTransactionTableComponent {
+export class ChatBankAccountTableComponent {
   private readonly convexService = inject(ConvexService);
 
-  readonly transactionIds = input.required<string[]>();
+  readonly accountIds = input.required<string[]>();
 
-  private readonly _transactions = signal<Transaction[]>([]);
+  private readonly _accounts = signal<BankAccount[]>([]);
   private readonly _loading = signal<boolean>(false);
   private readonly _error = signal<string | null>(null);
   private _loadedCacheKey: string | null = null;
 
-  readonly transactions = this._transactions.asReadonly();
+  readonly accounts = this._accounts.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
 
-  // Create an array for skeleton rows based on the number of transaction IDs
-  readonly skeletonArray = computed(() => Array(this.transactionIds().length).fill(null));
+  // Create an array for skeleton rows based on the number of account IDs
+  readonly skeletonArray = computed(() => Array(this.accountIds().length).fill(null));
+
+  // Calculate total balance
+  readonly totalBalance = computed(() => {
+    return this.accounts().reduce((sum, account) => {
+      return sum + (account.currentBalance || 0);
+    }, 0);
+  });
 
   // Track whether content is scrollable
   private readonly _isLoadingScrollable = signal<boolean>(false);
@@ -149,14 +169,14 @@ export class ChatTransactionTableComponent {
 
   constructor() {
     effect(() => {
-      const ids = this.transactionIds();
+      const ids = this.accountIds();
       if (ids.length > 0) {
         // Create a cache key from the sorted IDs to detect changes
         const cacheKey = ids.slice().sort().join(',');
 
         // Only load if we haven't already loaded these exact IDs
         if (cacheKey !== this._loadedCacheKey) {
-          this.loadTransactions(ids, cacheKey);
+          this.loadAccounts(ids, cacheKey);
         }
       }
     });
@@ -167,7 +187,7 @@ export class ChatTransactionTableComponent {
     });
   }
 
-  private async loadTransactions(ids: string[], cacheKey: string) {
+  private async loadAccounts(ids: string[], cacheKey: string) {
     this._loading.set(true);
     this._error.set(null);
 
@@ -183,24 +203,24 @@ export class ChatTransactionTableComponent {
       });
 
       if (validIds.length === 0) {
-        this._error.set('No valid transaction IDs provided');
+        this._error.set('No valid bank account IDs provided');
         this._loading.set(false);
         return;
       }
 
       const client = this.convexService.getClient();
-      const result = await client.query(api.transactions.getTransactionsByIds, {
-        transactionIds: validIds as Id<'transaction'>[],
+      const result = await client.query(api.bankAccounts.getBankAccountsByIds, {
+        accountIds: validIds as Id<'bankAccount'>[],
       });
 
-      this._transactions.set(result);
+      this._accounts.set(result);
       this._loadedCacheKey = cacheKey;
 
       // Check scroll state after data loads and DOM updates
       setTimeout(() => this.checkScrollState(), 0);
     } catch (error) {
-      console.error('Error loading transactions:', error);
-      this._error.set('Failed to load transactions');
+      console.error('Error loading bank accounts:', error);
+      this._error.set('Failed to load bank accounts');
     } finally {
       this._loading.set(false);
     }
@@ -220,39 +240,30 @@ export class ChatTransactionTableComponent {
     }
   }
 
-  formatDate(dateString: string): string {
-    const parts = dateString.split('-');
-    if (parts.length === 3) {
-      const year = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10) - 1;
-      const day = parseInt(parts[2], 10);
-      const date = new Date(year, month, day);
-      return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      }).format(date);
-    }
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    }).format(date);
+  formatAccountType(accountType: string): string {
+    // Convert account type from snake_case to Title Case
+    return accountType
+      .split('_')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
   }
 
-  formatAmount(amount: bigint | number): string {
+  formatAmount(amount: bigint | number | null | undefined): string {
+    if (amount === null || amount === undefined) {
+      return '$0.00';
+    }
+
     const numAmount = typeof amount === 'bigint' ? Number(amount) : amount;
-    const dollars = Math.abs(numAmount) / 100;
+    const dollars = numAmount / 100;
     const formatted = new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-    }).format(dollars);
+    }).format(Math.abs(dollars));
 
-    return numAmount >= 0 ? `+${formatted}` : `-${formatted}`;
+    return numAmount >= 0 ? formatted : `-${formatted}`;
   }
 
-  Number(value: bigint | number): number {
-    return typeof value === 'bigint' ? Number(value) : value;
+  getBalance(account: BankAccount): number {
+    return account.currentBalance || 0;
   }
 }

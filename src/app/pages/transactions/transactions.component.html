@@ -1,4 +1,4 @@
-<div class="container mx-auto p-6" (scroll)="onScroll($event)">
+<div class="container mx-auto max-w-7xl p-6" (scroll)="onScroll($event)">
   <!-- Header -->
   <div class="mb-8">
     <h1 class="text-3xl font-bold">Transactions</h1>
@@ -6,20 +6,20 @@
   </div>
 
   <!-- Summary Cards -->
-  <div class="grid gap-4 md:grid-cols-3 mb-8">
-    <div class="rounded-lg border border-border bg-card p-6 shadow">
+  <div class="grid gap-4 md:grid-cols-3 mb-4">
+    <div class="rounded-2xl border border-border bg-card p-6 shadow-sm">
       <h3 class="text-sm font-medium text-muted-foreground">Total Income</h3>
       <p class="text-2xl font-bold text-green-600">
         {{ formatCurrency(transactionsService.totalIncome()) }}
       </p>
     </div>
-    <div class="rounded-lg border border-border bg-card p-6 shadow">
+    <div class="rounded-2xl border border-border bg-card p-6 shadow-sm">
       <h3 class="text-sm font-medium text-muted-foreground">Total Expenses</h3>
       <p class="text-2xl font-bold text-red-600">
         {{ formatCurrency(transactionsService.totalExpenses()) }}
       </p>
     </div>
-    <div class="rounded-lg border border-border bg-card p-6 shadow">
+    <div class="rounded-2xl border border-border bg-card p-6 shadow-sm">
       <h3 class="text-sm font-medium text-muted-foreground">Net Amount</h3>
       <p
         class="text-2xl font-bold"
@@ -33,14 +33,14 @@
 
   <!-- Loading State -->
   @if (transactionsService.loading() && !transactionsService.hasLoaded()) {
-    <div class="rounded-lg border border-border bg-card p-8 text-center shadow">
+    <div class="rounded-2xl border border-border bg-card p-8 text-center shadow-sm">
       <p class="text-muted-foreground">Loading transactions...</p>
     </div>
   }
 
   <!-- Error State -->
   @if (transactionsService.error()) {
-    <div class="rounded-lg border border-destructive bg-card p-6 shadow">
+    <div class="rounded-2xl border border-destructive bg-card p-6 shadow-sm">
       <p class="text-destructive">{{ transactionsService.error() }}</p>
       <button
         class="mt-4 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:cursor-pointer hover:text-accent-foreground"
@@ -58,7 +58,7 @@
     !transactionsService.loading() &&
     isGeneratingTransactions()
   ) {
-    <div class="rounded-lg border border-border bg-card p-12 text-center shadow">
+    <div class="rounded-2xl border border-border bg-card p-12 text-center shadow-sm">
       <div class="flex justify-center mb-4">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
@@ -83,14 +83,14 @@
     !transactionsService.loading() &&
     !isGeneratingTransactions()
   ) {
-    <div class="rounded-lg border border-border bg-card p-12 text-center shadow">
+    <div class="rounded-2xl border border-border bg-card p-12 text-center shadow-sm">
       <h3 class="text-lg font-semibold mb-2">No transactions yet</h3>
       <p class="text-muted-foreground mb-4">
         Transactions will appear here once your bank accounts are connected and synced.
       </p>
       <a
         routerLink="/dashboard"
-        class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+        class="inline-flex items-center justify-center rounded-md bg-kb-primary px-4 py-2 tracking-wide cursor-pointer text-sm font-medium text-primary-foreground hover:bg-kb-primary/90"
       >
         Go to Dashboard
       </a>
@@ -99,7 +99,7 @@
 
   <!-- Transactions List -->
   @if (transactionsService.hasTransactions()) {
-    <div class="rounded-lg border border-border bg-card shadow">
+    <div class="rounded-2xl border border-border bg-card shadow-sm">
       <div class="overflow-x-auto">
         <table class="w-full">
           <thead class="border-b">
@@ -180,7 +180,7 @@
         @if (transactionsService.hasMore() && !transactionsService.loadingMore()) {
           <button
             (click)="loadMore()"
-            class="mt-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:cursor-pointer hover:text-accent-foreground"
+            class="mt-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent tracking-wide hover:cursor-pointer hover:text-accent-foreground"
           >
             Load More
           </button>

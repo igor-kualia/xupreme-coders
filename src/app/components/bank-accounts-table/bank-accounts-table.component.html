@@ -7,7 +7,7 @@
       @if (connectionState() === 'idle') {
         <button
           (click)="linkBank()"
-          class="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 hover:cursor-pointer"
+          class="inline-flex items-center gap-2 rounded-md text-sm bg-kb-primary px-3 py-2 font-medium text-primary-foreground tracking-wide transition-colors hover:bg-kb-primary/90 cursor-pointer"
         >
           <ng-icon name="lucidePlus" hlm size="sm" />
           Link Bank Account
@@ -77,7 +77,7 @@
                     />
                   } @else {
                     <div
-                      class="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary"
+                      class="flex size-8 items-center justify-center rounded-full bg-kb-primary/10 text-primary"
                     >
                       <ng-icon name="lucideBuilding2" hlm size="sm" />
                     </div>

@@ -10,7 +10,7 @@ import {
   HlmMenuSeparator,
 } from '../../lib/ui/ui-menu-helm/src';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideLogOut, lucideChevronDown } from '@ng-icons/lucide';
+import { lucideLogOut, lucideChevronDown, lucideMenu } from '@ng-icons/lucide';
 import { HlmIcon } from '@spartan-ng/helm/icon';
 
 /**
@@ -33,7 +33,7 @@ import { HlmIcon } from '@spartan-ng/helm/icon';
     NgIcon,
     HlmIcon,
   ],
-  providers: [provideIcons({ lucideLogOut, lucideChevronDown })],
+  providers: [provideIcons({ lucideLogOut, lucideChevronDown, lucideMenu })],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HeaderComponent {
