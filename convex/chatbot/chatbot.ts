@@ -21,7 +21,9 @@ import {
   ListMerchantsInput,
   ProposeTransactionUpdateInput,
   QueryTransactionsInput,
+  AutoCategorizeByMerchantInput,
 } from './tools';
+import { executeAutoCategorizeByMerchant } from './autoCategorize';
 
 /**
  * Send a message to the chatbot and get a response
@@ -164,6 +166,12 @@ export const sendMessage = action({
                   ctx,
                   userId,
                   toolCall.input as ConfirmTransactionUpdateInput,
+                );
+              } else if (toolCall.name === 'auto_categorize_by_merchant') {
+                result = await executeAutoCategorizeByMerchant(
+                  ctx,
+                  userId,
+                  toolCall.input as AutoCategorizeByMerchantInput,
                 );
               } else {
                 result = `Unknown tool: ${toolCall.name}`;

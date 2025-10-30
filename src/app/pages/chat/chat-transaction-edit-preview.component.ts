@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ConvexService } from '../../services/convex.service';
 import { api } from '../../../../convex/_generated/api';

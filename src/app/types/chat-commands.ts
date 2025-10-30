@@ -110,7 +110,18 @@ export function parseMessageCommands(content: string): ChatMessageSegment[] {
   const segments: ChatMessageSegment[] = [];
   let lastIndex = 0;
 
-  const matches = content.matchAll(COMMAND_PATTERN);
+  // Clean up any markdown artifacts or stray JSON formatting from LLM responses
+  // Remove lines that are just closing braces (common with some LLMs)
+  const cleanedContent = content
+    .split('\n')
+    .filter((line) => {
+      const trimmed = line.trim();
+      // Filter out lines that are just braces or quotes with braces
+      return trimmed !== '}}' && trimmed !== '"}}"' && trimmed !== '"{{' && trimmed !== '{{';
+    })
+    .join('\n');
+
+  const matches = cleanedContent.matchAll(COMMAND_PATTERN);
 
   for (const match of matches) {
     const [, commandType] = match;
@@ -124,8 +135,8 @@ export function parseMessageCommands(content: string): ChatMessageSegment[] {
     let inString = false;
     let escapeNext = false;
 
-    for (let i = jsonStart; i < content.length; i++) {
-      const char = content[i];
+    for (let i = jsonStart; i < cleanedContent.length; i++) {
+      const char = cleanedContent[i];
 
       if (escapeNext) {
         escapeNext = false;
@@ -156,14 +167,23 @@ export function parseMessageCommands(content: string): ChatMessageSegment[] {
     }
 
     // Check if we found a complete JSON object followed by ]
-    if (braceCount === 0 && content[jsonEnd] === ']') {
-      const fullMatch = content.slice(commandStart, jsonEnd + 1);
-      const jsonData = content.slice(jsonStart, jsonEnd);
+    // Skip any extra closing braces or whitespace between JSON and ]
+    let closingBracketPos = jsonEnd;
+    while (
+      closingBracketPos < cleanedContent.length &&
+      (cleanedContent[closingBracketPos] === '}' || /\s/.test(cleanedContent[closingBracketPos]))
+    ) {
+      closingBracketPos++;
+    }
+
+    if (braceCount === 0 && cleanedContent[closingBracketPos] === ']') {
+      const fullMatch = cleanedContent.slice(commandStart, closingBracketPos + 1);
+      const jsonData = cleanedContent.slice(jsonStart, jsonEnd);
 
       if (matchIndex > lastIndex) {
         segments.push({
           type: 'text',
-          content: content.slice(lastIndex, matchIndex),
+          content: cleanedContent.slice(lastIndex, matchIndex),
         });
       }
 
@@ -185,30 +205,30 @@ export function parseMessageCommands(content: string): ChatMessageSegment[] {
         });
       }
 
-      lastIndex = jsonEnd + 1;
+      lastIndex = closingBracketPos + 1;
     } else {
       // Invalid command format, treat as text
       if (matchIndex > lastIndex) {
         segments.push({
           type: 'text',
-          content: content.slice(lastIndex, matchIndex),
+          content: cleanedContent.slice(lastIndex, matchIndex),
         });
       }
       lastIndex = matchIndex;
     }
   }
 
-  if (lastIndex < content.length) {
+  if (lastIndex < cleanedContent.length) {
     segments.push({
       type: 'text',
-      content: content.slice(lastIndex),
+      content: cleanedContent.slice(lastIndex),
     });
   }
 
   if (segments.length === 0) {
     segments.push({
       type: 'text',
-      content,
+      content: cleanedContent,
     });
   }
 
