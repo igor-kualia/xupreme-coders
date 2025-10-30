@@ -1,4 +1,5 @@
 import { v } from 'convex/values';
+import { Id } from './_generated/dataModel';
 import { query } from './_generated/server';
 
 /**
@@ -72,6 +73,75 @@ export const listBankAccounts = query({
     );
 
     // Filter out null entries (accounts without valid bank links)
+    const enrichedAccounts = enrichedAccountsWithNulls.filter(
+      (account): account is NonNullable<typeof account> => account !== null,
+    );
+
+    return enrichedAccounts;
+  },
+});
+
+/**
+ * Get specific bank accounts by their IDs
+ * Used by the chat interface to display bank account tables
+ */
+export const getBankAccountsByIds = query({
+  args: {
+    accountIds: v.array(v.id('bankAccount')),
+  },
+  handler: async (ctx, { accountIds }) => {
+    // Get authenticated user
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error('Not authenticated');
+    }
+
+    const userId = identity.subject;
+
+    // Fetch all requested accounts
+    const enrichedAccountsWithNulls = await Promise.all(
+      accountIds.map(async (accountId) => {
+        const account = await ctx.db.get(accountId);
+
+        // Security check: ensure account belongs to the authenticated user
+        if (!account || account.userId !== userId) {
+          return null;
+        }
+
+        // Bank account must have a bank link
+        if (!account.bankLinkId) {
+          return null;
+        }
+
+        const bankLink = await ctx.db.get(account.bankLinkId);
+        if (!bankLink) {
+          return null;
+        }
+
+        // Get institution details from the bank link
+        const institution = bankLink.globalInstitutionId
+          ? await ctx.db.get(bankLink.globalInstitutionId)
+          : null;
+
+        // Build the response object with flattened structure
+        return {
+          _id: account._id,
+          name: account.name,
+          accountType: account.accountType,
+          currentBalance: account.currentBalance,
+          availableBalance: account.availableBalance,
+          accountNumberMask: account.accountNumberMask,
+          officialName: account.officialName,
+          lastUpdated: account.lastUpdated,
+          // Institution properties
+          institutionName: institution?.name,
+          institutionLogoUrl: institution?.logoUrl,
+          institutionPrimaryColor: institution?.primaryColor,
+        };
+      }),
+    );
+
+    // Filter out null entries (accounts that don't exist or don't belong to user)
     const enrichedAccounts = enrichedAccountsWithNulls.filter(
       (account): account is NonNullable<typeof account> => account !== null,
     );

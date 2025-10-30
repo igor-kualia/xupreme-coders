@@ -5,17 +5,62 @@
  * Example: [RENDER:transaction-table:{"transactionIds":["id1","id2"]}]
  */
 
-export type ChatCommandType = 'transaction-table';
+export type ChatCommandType = 'transaction-table' | 'category-chart' | 'bank-account-table';
 
 export interface TransactionTableCommand {
   transactionIds: string[];
 }
 
-export type ChatCommandData = TransactionTableCommand;
+export interface CategoryChartCommand {
+  categoryIds: string[];
+  chartType: 'pie' | 'bar' | 'table';
+  startDate?: string;
+  endDate?: string;
+  transactionType?: 'income' | 'expense' | 'transfer' | 'all';
+}
+
+export interface BankAccountTableCommand {
+  accountIds: string[];
+}
+
+export type ChatCommandData =
+  | TransactionTableCommand
+  | CategoryChartCommand
+  | BankAccountTableCommand;
 
 export interface ChatCommand {
   type: ChatCommandType;
   data: ChatCommandData;
+}
+
+/**
+ * Type guard to check if command data is TransactionTableCommand
+ */
+export function isTransactionTableCommand(
+  type: ChatCommandType,
+  data: ChatCommandData,
+): data is TransactionTableCommand {
+  return type === 'transaction-table';
+}
+
+/**
+ * Type guard to check if command data is CategoryChartCommand
+ */
+export function isCategoryChartCommand(
+  type: ChatCommandType,
+  data: ChatCommandData,
+): data is CategoryChartCommand {
+  return type === 'category-chart';
+}
+
+/**
+ * Type guard to check if command data is BankAccountTableCommand
+ */
+export function isBankAccountTableCommand(
+  type: ChatCommandType,
+  data: ChatCommandData,
+): data is BankAccountTableCommand {
+  return type === 'bank-account-table';
 }
 
 export interface ChatMessageSegment {

@@ -17,12 +17,30 @@ import { HlmDialogService } from '../../lib/ui/ui-dialog-helm/src';
 import { ClearChatDialogComponent } from './clear-chat-dialog.component';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideArrowUp, lucidePlus } from '@ng-icons/lucide';
-import { parseMessageCommands, ChatMessageSegment } from '../../types/chat-commands';
+import {
+  BankAccountTableCommand,
+  CategoryChartCommand,
+  ChatCommandData,
+  isCategoryChartCommand,
+  isTransactionTableCommand,
+  parseMessageCommands,
+  ChatMessageSegment,
+  TransactionTableCommand,
+} from '../../types/chat-commands';
 import { ChatTransactionTableComponent } from './chat-transaction-table.component';
+import { ChatCategoryChartComponent } from './chat-category-chart.component';
+import { ChatBankAccountTableComponent } from './chat-bank-account-table.component';
 
 @Component({
   selector: 'app-chat',
-  imports: [CommonModule, FormsModule, NgIcon, ChatTransactionTableComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    NgIcon,
+    ChatTransactionTableComponent,
+    ChatCategoryChartComponent,
+    ChatBankAccountTableComponent,
+  ],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,6 +53,7 @@ export class ChatComponent {
 
   readonly isLoading = this.chatService.isLoading;
   readonly error = this.chatService.error;
+  readonly messageQueue = this.chatService.messageQueue;
   readonly isConversationLoaded = this.chatService.isConversationLoaded;
 
   readonly messages = computed(() => {
@@ -49,7 +68,7 @@ export class ChatComponent {
   readonly messageTextarea = viewChild<ElementRef<HTMLTextAreaElement>>('messageTextarea');
 
   readonly canSend = computed(() => {
-    return this.messageInput().trim().length > 0 && !this.isLoading();
+    return this.messageInput().trim().length > 0;
   });
 
   private typewriterContent = signal<Map<string, string>>(new Map());
@@ -141,45 +160,115 @@ export class ChatComponent {
     const segments = parseMessageCommands(fullContent);
     const hasCommands = segments.some((seg) => seg.type === 'component');
 
-    // If there are commands, set the full content immediately so components render
-    // but still animate the text portions
+    // If there are commands, we need to animate text but show commands immediately
     if (hasCommands) {
-      const currentMap = new Map(this.typewriterContent());
-      currentMap.set(unprocessedMessage._id, fullContent);
-      this.typewriterContent.set(currentMap);
-
-      // Mark as completed immediately since we're showing the full content
-      const completedSet = new Set(this.completedAnimations());
-      completedSet.add(unprocessedMessage._id);
-      this.completedAnimations.set(completedSet);
-      this.isAnimating.set(false);
-
-      // Try to animate the next message
-      setTimeout(() => {
-        this.startTypewriterEffect(this.messages());
-      }, 100);
+      this.animateWithCommands(unprocessedMessage._id, fullContent, segments);
       return;
     }
 
     // No commands, proceed with normal typewriter animation
+    this.animateTextOnly(unprocessedMessage._id, fullContent);
+  }
+
+  private animateWithCommands(
+    messageId: string,
+    fullContent: string,
+    segments: ChatMessageSegment[],
+  ): void {
+    let currentSegmentIndex = 0;
+    let currentCharInSegment = 0;
+    const speed = 10;
+
+    const animateNextPart = () => {
+      // Check if animation is complete (all segments processed)
+      if (currentSegmentIndex >= segments.length) {
+        // Animation complete, show full content
+        const currentMap = new Map(this.typewriterContent());
+        currentMap.set(messageId, fullContent);
+        this.typewriterContent.set(currentMap);
+
+        const completedSet = new Set(this.completedAnimations());
+        completedSet.add(messageId);
+        this.completedAnimations.set(completedSet);
+        this.isAnimating.set(false);
+
+        setTimeout(() => {
+          this.startTypewriterEffect(this.messages());
+        }, 100);
+        return;
+      }
+
+      const currentSegment = segments[currentSegmentIndex];
+
+      // Build display content: show all previous segments + current partial segment
+      let displayContent = '';
+
+      for (let i = 0; i < segments.length; i++) {
+        if (i < currentSegmentIndex) {
+          // Previous segments - show fully
+          displayContent += segments[i].content;
+        } else if (i === currentSegmentIndex) {
+          // Current segment
+          if (currentSegment.type === 'component') {
+            // Components are shown fully immediately
+            displayContent += currentSegment.content;
+            // Move to next segment
+            currentSegmentIndex++;
+            currentCharInSegment = 0;
+
+            const currentMap = new Map(this.typewriterContent());
+            currentMap.set(messageId, displayContent);
+            this.typewriterContent.set(currentMap);
+
+            // Continue with next segment immediately
+            setTimeout(animateNextPart, 10);
+            return;
+          } else {
+            // Text segment - show character by character
+            displayContent += currentSegment.content.substring(0, currentCharInSegment);
+          }
+        }
+        // Segments after current index are not shown yet
+      }
+
+      const currentMap = new Map(this.typewriterContent());
+      currentMap.set(messageId, displayContent);
+      this.typewriterContent.set(currentMap);
+
+      // Advance to next character or segment
+      currentCharInSegment++;
+
+      if (currentCharInSegment > currentSegment.content.length) {
+        // Current text segment is complete, move to next segment
+        currentSegmentIndex++;
+        currentCharInSegment = 0;
+      }
+
+      setTimeout(animateNextPart, speed);
+    };
+
+    animateNextPart();
+  }
+
+  private animateTextOnly(messageId: string, fullContent: string): void {
     let currentIndex = 0;
     const speed = 10;
 
     const typeNextChar = () => {
       if (currentIndex < fullContent.length) {
         const currentMap = new Map(this.typewriterContent());
-        currentMap.set(unprocessedMessage._id, fullContent.substring(0, currentIndex + 1));
+        currentMap.set(messageId, fullContent.substring(0, currentIndex + 1));
         this.typewriterContent.set(currentMap);
         currentIndex++;
         setTimeout(typeNextChar, speed);
       } else {
         const currentMap = new Map(this.typewriterContent());
-        currentMap.set(unprocessedMessage._id, fullContent);
+        currentMap.set(messageId, fullContent);
         this.typewriterContent.set(currentMap);
 
         // Mark animation as complete
         const completedSet = new Set(this.completedAnimations());
-        completedSet.add(unprocessedMessage._id);
+        completedSet.add(messageId);
         this.completedAnimations.set(completedSet);
         this.isAnimating.set(false);
 
@@ -334,5 +423,36 @@ export class ChatComponent {
       return;
     }
     this.messageTextarea()?.nativeElement.focus();
+  }
+
+  /**
+   * Type guard for transaction table command
+   */
+  isTransactionTableCommand = isTransactionTableCommand;
+
+  /**
+   * Type guard for category chart command
+   */
+  isCategoryChartCommand = isCategoryChartCommand;
+
+  /**
+   * Cast command data to TransactionTableCommand
+   */
+  asTransactionTableCommand(data: ChatCommandData): TransactionTableCommand {
+    return data as TransactionTableCommand;
+  }
+
+  /**
+   * Cast command data to CategoryChartCommand
+   */
+  asCategoryChartCommand(data: ChatCommandData): CategoryChartCommand {
+    return data as CategoryChartCommand;
+  }
+
+  /**
+   * Cast command data to BankAccountTableCommand
+   */
+  asBankAccountTableCommand(data: ChatCommandData): BankAccountTableCommand {
+    return data as BankAccountTableCommand;
   }
 }
