@@ -14,6 +14,7 @@ import {
   executeListMerchants,
   executeProposeTransactionUpdate,
   executeQueryTransactions,
+  executeRequestAccountConnection,
   ConfirmTransactionUpdateInput,
   GetCategorySummaryInput,
   ListBankAccountsInput,
@@ -22,6 +23,7 @@ import {
   ProposeTransactionUpdateInput,
   QueryTransactionsInput,
   AutoCategorizeByMerchantInput,
+  RequestAccountConnectionInput,
 } from './tools';
 import { executeAutoCategorizeByMerchant } from './autoCategorize';
 
@@ -172,6 +174,12 @@ export const sendMessage = action({
                   ctx,
                   userId,
                   toolCall.input as AutoCategorizeByMerchantInput,
+                );
+              } else if (toolCall.name === 'request_account_connection') {
+                result = await executeRequestAccountConnection(
+                  ctx,
+                  userId,
+                  toolCall.input as RequestAccountConnectionInput,
                 );
               } else {
                 result = `Unknown tool: ${toolCall.name}`;

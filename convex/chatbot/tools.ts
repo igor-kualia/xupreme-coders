@@ -479,6 +479,36 @@ NO CONFIRMATION STEP - This happens immediately.`,
 } as const;
 
 /**
+ * Tool definition for requesting account connection
+ */
+export const REQUEST_ACCOUNT_CONNECTION_TOOL = {
+  name: 'request_account_connection',
+  description: `Suggest connecting a bank account when the user doesn't have any accounts or needs to add more.
+
+USE THIS TOOL when:
+- User asks about connecting a bank account
+- User wants to add or link bank accounts
+- User mentions they need to connect their accounts
+- Analysis requires account data but user has no accounts
+- User asks how to get started with tracking their finances
+
+This tool will show a button in the chat that opens the Plaid Link flow when clicked.
+
+IMPORTANT: Only use this tool when account connection is relevant to the conversation. Don't suggest it unprompted unless the user has no accounts.`,
+  input_schema: {
+    type: 'object',
+    properties: {
+      reason: {
+        type: 'string',
+        description:
+          'A brief explanation of why connecting an account would be helpful (e.g., "to start tracking your spending", "to add another account for complete financial picture")',
+      },
+    },
+    required: ['reason'],
+  },
+} as const;
+
+/**
  * Input type for list categories tool
  */
 export interface ListCategoriesInput {
@@ -590,6 +620,13 @@ export interface ConfirmTransactionUpdateInput {
 export interface AutoCategorizeByMerchantInput {
   merchantName: string;
   categoryName: string;
+}
+
+/**
+ * Input type for the request account connection tool
+ */
+export interface RequestAccountConnectionInput {
+  reason: string;
 }
 
 /**
@@ -1557,6 +1594,26 @@ function formatMonthlyTrend(transactions: any[]): string {
   });
 
   return `Monthly Spending Trend:\n\n${formatted.join('\n')}`;
+}
+
+/**
+ * Execute the request account connection tool
+ */
+export async function executeRequestAccountConnection(
+  ctx: ActionCtx,
+  userId: string,
+  input: RequestAccountConnectionInput,
+): Promise<string> {
+  try {
+    // Return RENDER command for the account connection prompt
+    const renderData = { reason: input.reason };
+    const command = `[RENDER:account-connection-prompt:${JSON.stringify(renderData)}]`;
+
+    return `I can help you connect your bank account. ${input.reason}\n\n${command}`;
+  } catch (error) {
+    console.error('Error requesting account connection:', error);
+    return `Error requesting account connection: ${error instanceof Error ? error.message : 'Unknown error'}`;
+  }
 }
 
 /**

@@ -15,9 +15,21 @@
           </p>
           <button
             type="button"
-            (click)="login()"
+            (click)="signup()"
             [disabled]="isLoading()"
             class="w-full font-medium rounded-lg bg-kb-primary px-4 py-3 text-primary-foreground tracking-wide hover:bg-kb-primary/90 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            @if (isLoading()) {
+              <span>Loading...</span>
+            } @else {
+              <span>Sign Up</span>
+            }
+          </button>
+          <button
+            type="button"
+            (click)="login()"
+            [disabled]="isLoading()"
+            class="w-full font-medium rounded-md border-2 border-primary px-4 py-3 text-primary tracking-wide hover:bg-primary/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mt-3"
           >
             @if (isLoading()) {
               <span>Loading...</span>

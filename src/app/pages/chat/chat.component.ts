@@ -19,9 +19,11 @@ import { ClearChatDialogComponent } from './clear-chat-dialog.component';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideArrowUp, lucidePlus } from '@ng-icons/lucide';
 import {
+  AccountConnectionPromptCommand,
   BankAccountTableCommand,
   CategoryChartCommand,
   ChatCommandData,
+  isAccountConnectionPromptCommand,
   isCategoryChartCommand,
   isTransactionEditPreviewCommand,
   isTransactionTableCommand,
@@ -34,6 +36,7 @@ import { ChatTransactionTableComponent } from './chat-transaction-table.componen
 import { ChatCategoryChartComponent } from './chat-category-chart.component';
 import { ChatBankAccountTableComponent } from './chat-bank-account-table.component';
 import { ChatTransactionEditPreviewComponent } from './chat-transaction-edit-preview.component';
+import { ChatAccountConnectionPromptComponent } from './chat-account-connection-prompt.component';
 
 @Component({
   selector: 'app-chat',
@@ -45,6 +48,7 @@ import { ChatTransactionEditPreviewComponent } from './chat-transaction-edit-pre
     ChatCategoryChartComponent,
     ChatBankAccountTableComponent,
     ChatTransactionEditPreviewComponent,
+    ChatAccountConnectionPromptComponent,
   ],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.css',
@@ -63,10 +67,7 @@ export class ChatComponent {
   readonly isConversationLoaded = this.chatService.isConversationLoaded;
 
   readonly messages = computed(() => {
-    return this.chatService
-      .messages()
-      .filter((msg) => msg.content.trim().length > 0)
-      .reverse();
+    return this.chatService.messages().filter((msg) => msg.content.trim().length > 0);
   });
 
   readonly messageInput = signal<string>('');
@@ -80,10 +81,17 @@ export class ChatComponent {
   private typewriterContent = signal<Map<string, string>>(new Map());
   private lastProcessedMessageId = signal<string | null>(null);
   private initialMessageCount = signal<number>(0);
-  private hasUserSentMessage = signal<boolean>(false);
   private completedAnimations = signal<Set<string>>(new Set());
   private isAnimating = signal<boolean>(false);
   private parsedSegmentsCache = new Map<string, ChatMessageSegment[]>();
+
+  // Animation state for empty state to active state transition
+  readonly hasUserSentMessage = signal<boolean>(false);
+  readonly isTransitioning = signal<boolean>(false);
+  readonly isFadingIn = signal<boolean>(false);
+  readonly showEmptyState = computed(() => {
+    return this.messages().length === 0 && !this.isTransitioning();
+  });
 
   constructor() {
     effect(
@@ -321,6 +329,21 @@ export class ChatComponent {
       }
     }, 0);
 
+    // Trigger animation if this is the first message
+    if (this.messages().length === 0) {
+      this.isTransitioning.set(true);
+      // After fade out completes (300ms), start fade in
+      setTimeout(() => {
+        this.isFadingIn.set(true);
+      }, 300);
+      // Animation completes after 600ms
+      setTimeout(() => {
+        this.isTransitioning.set(false);
+        this.isFadingIn.set(false);
+      }, 600);
+    }
+
+    // Send message immediately
     await this.chatService.sendMessage(content);
   }
 
@@ -336,6 +359,21 @@ export class ChatComponent {
       this.messageTextarea()?.nativeElement.focus();
     }, 0);
 
+    // Trigger animation if this is the first message
+    if (this.messages().length === 0) {
+      this.isTransitioning.set(true);
+      // After fade out completes (300ms), start fade in
+      setTimeout(() => {
+        this.isFadingIn.set(true);
+      }, 300);
+      // Animation completes after 600ms
+      setTimeout(() => {
+        this.isTransitioning.set(false);
+        this.isFadingIn.set(false);
+      }, 600);
+    }
+
+    // Send message immediately
     await this.chatService.sendMessage(message);
   }
 
@@ -350,6 +388,8 @@ export class ChatComponent {
           this.typewriterContent.set(new Map());
           this.completedAnimations.set(new Set());
           this.isAnimating.set(false);
+          this.isTransitioning.set(false);
+          this.isFadingIn.set(false);
           this.parsedSegmentsCache.clear();
         },
         onClose: () => {
@@ -370,7 +410,7 @@ export class ChatComponent {
     setTimeout(() => {
       const container = this.messagesContainer()?.nativeElement;
       if (container) {
-        container.scrollTop = 0;
+        container.scrollTop = container.scrollHeight;
       }
     }, 100);
   }
@@ -449,6 +489,11 @@ export class ChatComponent {
   isTransactionEditPreviewCommand = isTransactionEditPreviewCommand;
 
   /**
+   * Type guard for account connection prompt command
+   */
+  isAccountConnectionPromptCommand = isAccountConnectionPromptCommand;
+
+  /**
    * Cast command data to TransactionTableCommand
    */
   asTransactionTableCommand(data: ChatCommandData): TransactionTableCommand {
@@ -474,5 +519,12 @@ export class ChatComponent {
    */
   asTransactionEditPreviewCommand(data: ChatCommandData): TransactionEditPreviewCommand {
     return data as TransactionEditPreviewCommand;
+  }
+
+  /**
+   * Cast command data to AccountConnectionPromptCommand
+   */
+  asAccountConnectionPromptCommand(data: ChatCommandData): AccountConnectionPromptCommand {
+    return data as AccountConnectionPromptCommand;
   }
 }
