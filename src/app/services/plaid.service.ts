@@ -1,4 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { api } from '../../../convex/_generated/api';
 import { ConvexService } from './convex.service';
 
@@ -82,6 +83,7 @@ interface LinkNewPlaidItemResult {
 @Injectable({ providedIn: 'root' })
 export class PlaidService {
   private readonly convexService = inject(ConvexService);
+  private readonly router = inject(Router);
   private linkHandler: PlaidLinkHandler | null = null;
   private readonly _loading = signal(false);
   readonly loading = this._loading.asReadonly();
@@ -241,6 +243,8 @@ export class PlaidService {
           void this.linkNewPlaidItem(publicToken, metadata)
             .then(() => {
               this.destroy();
+              // Navigate to accounts page after successful connection
+              void this.router.navigate(['/accounts']);
             })
             .catch((error: unknown) => {
               console.error('Error linking new Plaid item:', error);

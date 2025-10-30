@@ -59,7 +59,7 @@ export const sendMessage = action({
     }
 
     // Use provided model or default to Claude 3.5 Sonnet
-    const model = args.model || 'google/gemini-2.5-pro';
+    const model = args.model || 'google/gemini-2.5-flash';
 
     // Track usage metrics
     const startTime = Date.now();
@@ -178,38 +178,58 @@ export const sendMessage = action({
 
             try {
               if (toolCall.name === 'list_categories') {
-                result = await executeListCategories(ctx, userId, toolCall.input as ListCategoriesInput);
+                result = await executeListCategories(
+                  ctx,
+                  userId,
+                  toolCall.input as ListCategoriesInput,
+                );
               } else if (toolCall.name === 'list_merchants') {
-                result = await executeListMerchants(ctx, userId, toolCall.input as ListMerchantsInput);
+                result = await executeListMerchants(
+                  ctx,
+                  userId,
+                  toolCall.input as ListMerchantsInput,
+                );
               } else if (toolCall.name === 'query_transactions') {
-                result = await executeQueryTransactions(ctx, userId, toolCall.input as QueryTransactionsInput);
+                result = await executeQueryTransactions(
+                  ctx,
+                  userId,
+                  toolCall.input as QueryTransactionsInput,
+                );
               } else if (toolCall.name === 'get_category_summary') {
-                result = await executeGetCategorySummary(ctx, userId, toolCall.input as GetCategorySummaryInput);
+                result = await executeGetCategorySummary(
+                  ctx,
+                  userId,
+                  toolCall.input as GetCategorySummaryInput,
+                );
               } else if (toolCall.name === 'list_bank_accounts') {
-                result = await executeListBankAccounts(ctx, userId, toolCall.input as ListBankAccountsInput);
+                result = await executeListBankAccounts(
+                  ctx,
+                  userId,
+                  toolCall.input as ListBankAccountsInput,
+                );
               } else if (toolCall.name === 'propose_transaction_update') {
                 result = await executeProposeTransactionUpdate(
                   ctx,
                   userId,
-                  toolCall.input as ProposeTransactionUpdateInput
+                  toolCall.input as ProposeTransactionUpdateInput,
                 );
               } else if (toolCall.name === 'confirm_transaction_update') {
                 result = await executeConfirmTransactionUpdate(
                   ctx,
                   userId,
-                  toolCall.input as ConfirmTransactionUpdateInput
+                  toolCall.input as ConfirmTransactionUpdateInput,
                 );
               } else if (toolCall.name === 'auto_categorize_by_merchant') {
                 result = await executeAutoCategorizeByMerchant(
                   ctx,
                   userId,
-                  toolCall.input as AutoCategorizeByMerchantInput
+                  toolCall.input as AutoCategorizeByMerchantInput,
                 );
               } else if (toolCall.name === 'request_account_connection') {
                 result = await executeRequestAccountConnection(
                   ctx,
                   userId,
-                  toolCall.input as RequestAccountConnectionInput
+                  toolCall.input as RequestAccountConnectionInput,
                 );
               } else {
                 result = `Unknown tool: ${toolCall.name}`;
@@ -290,7 +310,8 @@ export const sendMessage = action({
 
       // Save usage data if we have a final message
       if (finalMessageId) {
-        const status: 'success' | 'error' | 'partial' = iteration >= maxIterations ? 'partial' : 'success';
+        const status: 'success' | 'error' | 'partial' =
+          iteration >= maxIterations ? 'partial' : 'success';
 
         // Save LLM usage
         const llmUsageId = await ctx.runMutation(internal.chatbot.chatbot.saveLLMUsage, {
@@ -477,8 +498,8 @@ export const saveMessage = internalMutation({
           id: v.string(),
           name: v.string(),
           input: v.any(),
-        })
-      )
+        }),
+      ),
     ),
     toolResults: v.optional(
       v.array(
@@ -486,8 +507,8 @@ export const saveMessage = internalMutation({
           toolCallId: v.string(),
           result: v.any(),
           isError: v.optional(v.boolean()),
-        })
-      )
+        }),
+      ),
     ),
   },
   handler: async (ctx, args) => {
