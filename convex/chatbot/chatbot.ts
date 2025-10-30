@@ -4,9 +4,14 @@
 
 import { v } from 'convex/values';
 import { internal } from '../_generated/api';
+import type { Id } from '../_generated/dataModel';
 import { action, internalMutation, internalQuery, mutation, query } from '../_generated/server';
+import { executeAutoCategorizeByMerchant } from './autoCategorize';
 import { callLLM, ToolResult } from './llm';
+import { getCostForLLMCall } from './pricing';
 import {
+  AutoCategorizeByMerchantInput,
+  ConfirmTransactionUpdateInput,
   executeConfirmTransactionUpdate,
   executeGetCategorySummary,
   executeListBankAccounts,
@@ -15,17 +20,14 @@ import {
   executeProposeTransactionUpdate,
   executeQueryTransactions,
   executeRequestAccountConnection,
-  ConfirmTransactionUpdateInput,
   GetCategorySummaryInput,
   ListBankAccountsInput,
   ListCategoriesInput,
   ListMerchantsInput,
   ProposeTransactionUpdateInput,
   QueryTransactionsInput,
-  AutoCategorizeByMerchantInput,
   RequestAccountConnectionInput,
 } from './tools';
-import { executeAutoCategorizeByMerchant } from './autoCategorize';
 
 /**
  * Send a message to the chatbot and get a response
@@ -58,6 +60,25 @@ export const sendMessage = action({
 
     // Use provided model or default to Claude 3.5 Sonnet
     const model = args.model || 'google/gemini-2.5-flash';
+
+    // Track usage metrics
+    const startTime = Date.now();
+    let firstLLMCallTime: number | null = null;
+    let totalPromptTokens = 0;
+    let totalCompletionTokens = 0;
+    let totalTokens = 0;
+    let totalCost = 0;
+    let costSource: 'openrouter' | 'calculated' = 'calculated';
+    const toolsUsed: string[] = [];
+    const toolExecutionRecords: Array<{
+      toolName: string;
+      toolCallId: string;
+      executionTimeMs: number;
+      status: 'success' | 'error';
+      errorMessage?: string;
+    }> = [];
+    let finalMessageId: Id<'chatMessage'> | null = null;
+    let iteration = 0;
 
     try {
       // 1. Save user message to database
@@ -92,14 +113,37 @@ export const sendMessage = action({
       });
 
       let assistantResponse = '';
-      let maxIterations = 5; // Prevent infinite loops
-      let iteration = 0;
+      const maxIterations = 5; // Prevent infinite loops
 
       while (iteration < maxIterations) {
         iteration++;
 
+        // Track time for first LLM call (latency)
+        const llmCallStart = Date.now();
+
         // Call LLM
         const llmResponse = await callLLM(apiKey, model, conversationHistory);
+
+        // Track first LLM response time
+        if (firstLLMCallTime === null) {
+          firstLLMCallTime = Date.now() - llmCallStart;
+        }
+
+        // Accumulate token usage
+        if (llmResponse.usage) {
+          totalPromptTokens += llmResponse.usage.promptTokens;
+          totalCompletionTokens += llmResponse.usage.completionTokens;
+          totalTokens += llmResponse.usage.totalTokens;
+        }
+
+        // Calculate cost for this LLM call
+        if (llmResponse.rawResponse) {
+          const costResult = getCostForLLMCall(llmResponse.rawResponse, model);
+          if (costResult) {
+            totalCost += costResult.cost;
+            costSource = costResult.source;
+          }
+        }
 
         // If there are tool calls, execute them
         if (llmResponse.toolCalls && llmResponse.toolCalls.length > 0) {
@@ -125,6 +169,12 @@ export const sendMessage = action({
           for (const toolCall of llmResponse.toolCalls) {
             let result: string;
             let isError = false;
+            const toolStartTime = Date.now();
+
+            // Track tool name
+            if (!toolsUsed.includes(toolCall.name)) {
+              toolsUsed.push(toolCall.name);
+            }
 
             try {
               if (toolCall.name === 'list_categories') {
@@ -190,6 +240,16 @@ export const sendMessage = action({
               isError = true;
             }
 
+            // Track tool execution time
+            const executionTime = Date.now() - toolStartTime;
+            toolExecutionRecords.push({
+              toolName: toolCall.name,
+              toolCallId: toolCall.id,
+              executionTimeMs: executionTime,
+              status: isError ? 'error' : 'success',
+              errorMessage: isError ? result : undefined,
+            });
+
             toolResults.push({
               toolCallId: toolCall.id,
               result,
@@ -220,7 +280,7 @@ export const sendMessage = action({
           assistantResponse = llmResponse.content;
 
           // Save final assistant message
-          await ctx.runMutation(internal.chatbot.chatbot.saveMessage, {
+          finalMessageId = await ctx.runMutation(internal.chatbot.chatbot.saveMessage, {
             userId,
             role: 'assistant',
             content: llmResponse.content,
@@ -236,13 +296,55 @@ export const sendMessage = action({
         assistantResponse =
           "I've reached my processing limit for this query. Please try breaking down your question into smaller parts.";
 
-        await ctx.runMutation(internal.chatbot.chatbot.saveMessage, {
+        finalMessageId = await ctx.runMutation(internal.chatbot.chatbot.saveMessage, {
           userId,
           role: 'assistant',
           content: assistantResponse,
           toolCalls: undefined,
           toolResults: undefined,
         });
+      }
+
+      // Calculate total duration
+      const totalDuration = Date.now() - startTime;
+
+      // Save usage data if we have a final message
+      if (finalMessageId) {
+        const status: 'success' | 'error' | 'partial' =
+          iteration >= maxIterations ? 'partial' : 'success';
+
+        // Save LLM usage
+        const llmUsageId = await ctx.runMutation(internal.chatbot.chatbot.saveLLMUsage, {
+          userId,
+          messageId: finalMessageId,
+          model,
+          provider: 'openrouter',
+          promptTokens: totalPromptTokens || undefined,
+          completionTokens: totalCompletionTokens || undefined,
+          totalTokens: totalTokens || undefined,
+          estimatedCost: totalCost > 0 ? totalCost : undefined,
+          costSource: totalCost > 0 ? costSource : undefined,
+          toolCallCount: toolExecutionRecords.length || undefined,
+          toolsUsed: toolsUsed.length > 0 ? toolsUsed : undefined,
+          latencyMs: firstLLMCallTime || undefined,
+          totalDurationMs: totalDuration,
+          iterationCount: iteration,
+          status,
+        });
+
+        // Save tool usage records
+        for (const toolRecord of toolExecutionRecords) {
+          await ctx.runMutation(internal.chatbot.chatbot.saveToolUsage, {
+            userId,
+            messageId: finalMessageId,
+            llmUsageId,
+            toolName: toolRecord.toolName,
+            toolCallId: toolRecord.toolCallId,
+            executionTimeMs: toolRecord.executionTimeMs,
+            status: toolRecord.status,
+            errorMessage: toolRecord.errorMessage,
+          });
+        }
       }
 
       return {
@@ -255,13 +357,48 @@ export const sendMessage = action({
       const errorMessage = `I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`;
 
       // Save error message
-      await ctx.runMutation(internal.chatbot.chatbot.saveMessage, {
+      const errorMessageId = await ctx.runMutation(internal.chatbot.chatbot.saveMessage, {
         userId,
         role: 'assistant',
         content: errorMessage,
         toolCalls: undefined,
         toolResults: undefined,
       });
+
+      // Save error usage data
+      const totalDuration = Date.now() - startTime;
+      await ctx.runMutation(internal.chatbot.chatbot.saveLLMUsage, {
+        userId,
+        messageId: errorMessageId,
+        model,
+        provider: 'openrouter',
+        promptTokens: totalPromptTokens || undefined,
+        completionTokens: totalCompletionTokens || undefined,
+        totalTokens: totalTokens || undefined,
+        estimatedCost: totalCost > 0 ? totalCost : undefined,
+        costSource: totalCost > 0 ? costSource : undefined,
+        toolCallCount: toolExecutionRecords.length || undefined,
+        toolsUsed: toolsUsed.length > 0 ? toolsUsed : undefined,
+        latencyMs: firstLLMCallTime || undefined,
+        totalDurationMs: totalDuration,
+        iterationCount: iteration,
+        status: 'error',
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      });
+
+      // Save tool usage records even on error
+      for (const toolRecord of toolExecutionRecords) {
+        await ctx.runMutation(internal.chatbot.chatbot.saveToolUsage, {
+          userId,
+          messageId: errorMessageId,
+          llmUsageId: undefined, // No llmUsageId since we're in error handler
+          toolName: toolRecord.toolName,
+          toolCallId: toolRecord.toolCallId,
+          executionTimeMs: toolRecord.executionTimeMs,
+          status: toolRecord.status,
+          errorMessage: toolRecord.errorMessage,
+        });
+      }
 
       return {
         response: errorMessage,
@@ -377,7 +514,7 @@ export const saveMessage = internalMutation({
   handler: async (ctx, args) => {
     const timestamp = new Date().toISOString();
 
-    await ctx.db.insert('chatMessage', {
+    const messageId = await ctx.db.insert('chatMessage', {
       userId: args.userId,
       role: args.role,
       content: args.content,
@@ -385,6 +522,88 @@ export const saveMessage = internalMutation({
       toolResults: args.toolResults,
       timestamp,
       createdAt: timestamp,
+    });
+
+    return messageId;
+  },
+});
+
+/**
+ * Internal mutation to save LLM usage data
+ */
+export const saveLLMUsage = internalMutation({
+  args: {
+    userId: v.string(),
+    messageId: v.id('chatMessage'),
+    model: v.string(),
+    provider: v.string(),
+    promptTokens: v.optional(v.number()),
+    completionTokens: v.optional(v.number()),
+    totalTokens: v.optional(v.number()),
+    estimatedCost: v.optional(v.number()),
+    costSource: v.optional(v.union(v.literal('openrouter'), v.literal('calculated'))),
+    toolCallCount: v.optional(v.number()),
+    toolsUsed: v.optional(v.array(v.string())),
+    latencyMs: v.optional(v.number()),
+    totalDurationMs: v.optional(v.number()),
+    iterationCount: v.optional(v.number()),
+    status: v.union(v.literal('success'), v.literal('error'), v.literal('partial')),
+    errorMessage: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const timestamp = new Date().toISOString();
+
+    const llmUsageId = await ctx.db.insert('llmUsage', {
+      userId: args.userId,
+      messageId: args.messageId,
+      model: args.model,
+      provider: args.provider,
+      promptTokens: args.promptTokens,
+      completionTokens: args.completionTokens,
+      totalTokens: args.totalTokens,
+      estimatedCost: args.estimatedCost,
+      costSource: args.costSource,
+      toolCallCount: args.toolCallCount,
+      toolsUsed: args.toolsUsed,
+      latencyMs: args.latencyMs,
+      totalDurationMs: args.totalDurationMs,
+      iterationCount: args.iterationCount,
+      status: args.status,
+      errorMessage: args.errorMessage,
+      timestamp,
+    });
+
+    return llmUsageId;
+  },
+});
+
+/**
+ * Internal mutation to save tool usage data
+ */
+export const saveToolUsage = internalMutation({
+  args: {
+    userId: v.string(),
+    messageId: v.id('chatMessage'),
+    llmUsageId: v.optional(v.id('llmUsage')),
+    toolName: v.string(),
+    toolCallId: v.string(),
+    executionTimeMs: v.number(),
+    status: v.union(v.literal('success'), v.literal('error')),
+    errorMessage: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const timestamp = new Date().toISOString();
+
+    await ctx.db.insert('toolUsage', {
+      userId: args.userId,
+      messageId: args.messageId,
+      llmUsageId: args.llmUsageId,
+      toolName: args.toolName,
+      toolCallId: args.toolCallId,
+      executionTimeMs: args.executionTimeMs,
+      status: args.status,
+      errorMessage: args.errorMessage,
+      timestamp,
     });
   },
 });

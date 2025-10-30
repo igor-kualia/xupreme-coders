@@ -37,6 +37,8 @@ import { ChatCategoryChartComponent } from './chat-category-chart.component';
 import { ChatBankAccountTableComponent } from './chat-bank-account-table.component';
 import { ChatTransactionEditPreviewComponent } from './chat-transaction-edit-preview.component';
 import { ChatAccountConnectionPromptComponent } from './chat-account-connection-prompt.component';
+import { AnalyticsPanelComponent } from './analytics-panel.component';
+import type { Id } from '../../../../convex/_generated/dataModel';
 
 @Component({
   selector: 'app-chat',
@@ -49,12 +51,13 @@ import { ChatAccountConnectionPromptComponent } from './chat-account-connection-
     ChatBankAccountTableComponent,
     ChatTransactionEditPreviewComponent,
     ChatAccountConnectionPromptComponent,
+    AnalyticsPanelComponent,
   ],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [provideIcons({ lucideArrowUp, lucidePlus })],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ChatComponent {
   private chatService = inject(ChatService);
@@ -77,6 +80,10 @@ export class ChatComponent {
   readonly canSend = computed(() => {
     return this.messageInput().trim().length > 0;
   });
+
+  // Analytics panel state
+  readonly isAnalyticsPanelVisible = signal<boolean>(this.loadAnalyticsPanelState());
+  readonly selectedMessageId = signal<Id<'chatMessage'> | null>(null);
 
   private typewriterContent = signal<Map<string, string>>(new Map());
   private lastProcessedMessageId = signal<string | null>(null);
@@ -526,5 +533,43 @@ export class ChatComponent {
    */
   asAccountConnectionPromptCommand(data: ChatCommandData): AccountConnectionPromptCommand {
     return data as AccountConnectionPromptCommand;
+  }
+
+  /**
+   * Toggle analytics panel visibility
+   */
+  toggleAnalyticsPanel(): void {
+    this.isAnalyticsPanelVisible.update((visible) => {
+      const newState = !visible;
+      this.saveAnalyticsPanelState(newState);
+      return newState;
+    });
+  }
+
+  /**
+   * Handle message selection from analytics panel
+   */
+  onMessageSelected(messageId: Id<'chatMessage'>): void {
+    this.selectedMessageId.set(messageId);
+  }
+
+  /**
+   * Load analytics panel state from localStorage
+   */
+  private loadAnalyticsPanelState(): boolean {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const saved = localStorage.getItem('analyticsPanel.visible');
+      return saved === 'true';
+    }
+    return false;
+  }
+
+  /**
+   * Save analytics panel state to localStorage
+   */
+  private saveAnalyticsPanelState(visible: boolean): void {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem('analyticsPanel.visible', visible.toString());
+    }
   }
 }

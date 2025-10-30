@@ -210,4 +210,68 @@ export default defineSchema({
   })
     .index('by_userId', ['userId'])
     .index('by_userId_timestamp', ['userId', 'timestamp']),
+
+  // LLM usage tracking - logs API calls, tokens, costs, and performance
+  llmUsage: defineTable({
+    userId: v.string(), // User ID from authentication
+    messageId: v.id('chatMessage'), // Link to the message
+    model: v.string(), // Model name (e.g., "google/gemini-2.5-flash")
+    provider: v.string(), // Provider name (e.g., "openrouter")
+
+    // Token usage
+    promptTokens: v.optional(v.number()), // Input tokens
+    completionTokens: v.optional(v.number()), // Output tokens
+    totalTokens: v.optional(v.number()), // Total tokens used
+
+    // Cost tracking (in USD)
+    estimatedCost: v.optional(v.number()), // Cost from OpenRouter or calculated
+    costSource: v.optional(v.union(v.literal('openrouter'), v.literal('calculated'))), // How cost was determined
+
+    // Tool usage summary
+    toolCallCount: v.optional(v.number()), // Number of tool calls
+    toolsUsed: v.optional(v.array(v.string())), // List of tool names used
+
+    // Performance metrics
+    latencyMs: v.optional(v.number()), // Time to first LLM response
+    totalDurationMs: v.optional(v.number()), // Total time including all tool calls
+    iterationCount: v.optional(v.number()), // Number of LLM call iterations
+
+    // Status
+    status: v.union(
+      v.literal('success'),
+      v.literal('error'),
+      v.literal('partial'), // Hit max iterations
+    ),
+    errorMessage: v.optional(v.string()), // Error details if failed
+
+    timestamp: v.string(), // ISO timestamp
+  })
+    .index('by_userId', ['userId'])
+    .index('by_userId_timestamp', ['userId', 'timestamp'])
+    .index('by_messageId', ['messageId']),
+
+  // Tool usage tracking - logs individual tool executions
+  toolUsage: defineTable({
+    userId: v.string(), // User ID from authentication
+    messageId: v.id('chatMessage'), // Link to the message
+    llmUsageId: v.optional(v.id('llmUsage')), // Link to LLM usage record
+
+    // Tool details
+    toolName: v.string(), // Name of the tool
+    toolCallId: v.string(), // Unique tool call ID
+
+    // Performance
+    executionTimeMs: v.number(), // How long the tool took to execute
+
+    // Status (metadata only, no full inputs/outputs for privacy)
+    status: v.union(v.literal('success'), v.literal('error')),
+    errorMessage: v.optional(v.string()), // Error details if failed
+
+    timestamp: v.string(), // ISO timestamp
+  })
+    .index('by_userId', ['userId'])
+    .index('by_toolName', ['toolName'])
+    .index('by_userId_toolName', ['userId', 'toolName'])
+    .index('by_messageId', ['messageId'])
+    .index('by_llmUsageId', ['llmUsageId']),
 });

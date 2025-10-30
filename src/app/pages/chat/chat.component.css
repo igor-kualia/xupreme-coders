@@ -151,3 +151,16 @@ textarea::-webkit-scrollbar-thumb:hover {
 .prose a:hover {
   opacity: 0.8;
 }
+
+/* Analytics panel transitions */
+.grid {
+  transition: grid-template-columns 0.3s ease-in-out;
+}
+
+/* Floating button transition */
+button.fixed {
+  transition:
+    right 0.3s ease-in-out,
+    transform 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
+}
