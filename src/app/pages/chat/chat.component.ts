@@ -1,4 +1,5 @@
 import {
+  CUSTOM_ELEMENTS_SCHEMA,
   ChangeDetectionStrategy,
   Component,
   ElementRef,
@@ -49,6 +50,7 @@ import { ChatTransactionEditPreviewComponent } from './chat-transaction-edit-pre
   styleUrl: './chat.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [provideIcons({ lucideArrowUp, lucidePlus })],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class ChatComponent {
   private chatService = inject(ChatService);

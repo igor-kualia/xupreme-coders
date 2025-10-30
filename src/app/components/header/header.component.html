@@ -1,35 +1,81 @@
 <header class="border-b border-border bg-card shadow-sm">
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+  <div class="mx-auto max-w-7xl px-6">
     <div class="flex h-16 items-center justify-between">
       <!-- Logo/Brand -->
       <div class="flex items-center space-x-8">
-        <a routerLink="/dashboard" class="flex items-center space-x-2 cursor:pointer">
-          <span class="text-xl font-bold text-foreground">KeyBank</span>
-          <img src="assets/key.svg" alt="KeyBank logo" class="h-6" />
+        <a routerLink="/dashboard" class="flex items-center space-x-2">
+          <span class="text-xl font-bold text-foreground hidden md:inline">KeyBank</span>
+          <img src="assets/key.svg" alt="KeyBank logo" class="w-12 min-w-12" />
         </a>
 
         <!-- Navigation Links -->
         @if (isAuthenticated()) {
-          <nav class="flex space-x-6">
+          <div class="block md:hidden">
+            <button
+              type="button"
+              class="flex items-center rounded-md px-3 py-2 transition-colors hover:cursor-pointer hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              brnMenuTrigger
+              [brnMenuTriggerFor]="navMenu"
+              aria-haspopup="menu"
+            >
+              <!-- Hamburger Icon -->
+              <ng-icon name="lucideMenu" size="24" />
+            </button>
+
+            <!-- Dropdown Menu -->
+            <ng-template #navMenu>
+              <hlm-menu class="w-56">
+                <a
+                  hlmMenuItem
+                  routerLink="/dashboard"
+                  routerLinkActive="font-medium"
+                  [routerLinkActiveOptions]="{ exact: true }"
+                  class="text-sm tracking-wide transition-colors hover:text-foreground cursor-pointer"
+                >
+                  Chat
+                </a>
+                <hlm-menu-separator />
+                <a
+                  hlmMenuItem
+                  routerLink="/accounts"
+                  routerLinkActive="font-medium"
+                  class="text-sm tracking-wide transition-colors hover:text-foreground cursor-pointer"
+                >
+                  Accounts
+                </a>
+                <hlm-menu-separator />
+                <a
+                  hlmMenuItem
+                  routerLink="/transactions"
+                  routerLinkActive="font-medium"
+                  class="text-sm tracking-wide transition-colors hover:text-foreground cursor-pointer"
+                >
+                  Transactions
+                </a>
+              </hlm-menu>
+            </ng-template>
+          </div>
+
+          <nav class="hidden md:flex space-x-6">
             <a
               routerLink="/dashboard"
               routerLinkActive="!text-foreground"
               [routerLinkActiveOptions]="{ exact: true }"
-              class="text-sm font-medium text-muted-foreground transition-colors cursor:pointer hover:text-foreground"
+              class="text-sm tracking-wide font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               Chat
             </a>
             <a
               routerLink="/accounts"
               routerLinkActive="!text-foreground"
-              class="text-sm font-medium text-muted-foreground transition-colors cursor:pointer hover:text-foreground"
+              class="text-sm tracking-wide font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               Accounts
             </a>
             <a
               routerLink="/transactions"
               routerLinkActive="!text-foreground"
-              class="text-sm font-medium text-muted-foreground transition-colors cursor:pointer hover:text-foreground"
+              class="text-sm tracking-wide font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               Transactions
             </a>
@@ -42,7 +88,7 @@
         <div>
           <button
             type="button"
-            class="flex items-center space-x-3 rounded-md px-3 py-2 transition-colors cursor:pointer hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            class="flex items-center space-x-3 rounded-md px-3 py-2 transition-colors hover:cursor-pointer hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             brnMenuTrigger
             [brnMenuTriggerFor]="userMenu"
             aria-haspopup="menu"
@@ -66,7 +112,7 @@
 
             <!-- User Name -->
             <div class="text-left">
-              <p class="text-sm font-medium text-foreground">{{ userDisplayName() }}</p>
+              <p class="text-sm tracking-wide font-medium text-foreground">{{ userDisplayName() }}</p>
             </div>
 
             <!-- Chevron Icon -->
@@ -75,7 +121,7 @@
 
           <!-- Dropdown Menu -->
           <ng-template #userMenu>
-            <hlm-menu class="w-56">
+            <hlm-menu class="w-56 cursor:pointer">
               <!-- User Email Label -->
               <hlm-menu-label class="font-normal">
                 <p class="text-xs leading-none text-muted-foreground">{{ user()?.email }}</p>
@@ -84,7 +130,7 @@
               <hlm-menu-separator />
 
               <!-- Logout Menu Item -->
-              <button hlmMenuItem (click)="logout()">
+              <button hlmMenuItem (click)="logout()" class="tracking-wide cursor-pointer">
                 <ng-icon hlm name="lucideLogOut" size="sm" hlmMenuIcon />
                 <span>Log Out</span>
               </button>
