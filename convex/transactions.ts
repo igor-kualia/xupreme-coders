@@ -3,7 +3,7 @@
  */
 
 import { v } from 'convex/values';
-import { query } from './_generated/server';
+import { mutation, query } from './_generated/server';
 import { Doc, Id } from './_generated/dataModel';
 
 /**
@@ -424,5 +424,176 @@ export const getTransactionsByIds = query({
     );
 
     return transactionsWithDetails;
+  },
+});
+
+/**
+ * Updates one or more transactions
+ * Supports updating category, date, and amount
+ * Validates all inputs and user ownership
+ */
+export const updateTransactions = mutation({
+  args: {
+    transactionIds: v.array(v.id('transaction')),
+    updates: v.object({
+      categoryId: v.optional(v.id('category')),
+      date: v.optional(v.string()),
+      amount: v.optional(v.int64()),
+    }),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error('Unauthenticated');
+    }
+
+    const userId = identity.subject;
+
+    // Validate that at least one update is provided
+    if (
+      args.updates.categoryId === undefined &&
+      args.updates.date === undefined &&
+      args.updates.amount === undefined
+    ) {
+      throw new Error('At least one field must be updated');
+    }
+
+    // Validate category exists if provided
+    if (args.updates.categoryId !== undefined) {
+      const category = await ctx.db.get(args.updates.categoryId);
+      if (!category) {
+        throw new Error('Category not found');
+      }
+      // Verify category belongs to user or is a system category
+      if (category.userId && category.userId !== userId) {
+        throw new Error('Category not found');
+      }
+    }
+
+    // Validate date format if provided (should be ISO date string)
+    if (args.updates.date !== undefined) {
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!dateRegex.test(args.updates.date)) {
+        throw new Error('Invalid date format. Expected YYYY-MM-DD');
+      }
+      // Additional validation: ensure it's a valid date
+      const date = new Date(args.updates.date);
+      if (isNaN(date.getTime())) {
+        throw new Error('Invalid date value');
+      }
+    }
+
+    // Validate amount if provided
+    if (args.updates.amount !== undefined) {
+      // Amount should be a reasonable value (not too large)
+      const MAX_AMOUNT = BigInt(1000000000000); // $10 billion in cents
+      if (args.updates.amount > MAX_AMOUNT || args.updates.amount < -MAX_AMOUNT) {
+        throw new Error('Amount is out of valid range');
+      }
+    }
+
+    // Fetch all transactions and verify ownership
+    const transactions = await Promise.all(
+      args.transactionIds.map(async (id) => {
+        const transaction = await ctx.db.get(id);
+        if (!transaction) {
+          throw new Error(`Transaction ${id} not found`);
+        }
+        if (transaction.userId !== userId) {
+          throw new Error(`Unauthorized access to transaction ${id}`);
+        }
+        if (transaction.isDeleted) {
+          throw new Error(`Transaction ${id} has been deleted`);
+        }
+        return transaction;
+      }),
+    );
+
+    // Build the update object
+    const updateData: Partial<Doc<'transaction'>> = {
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (args.updates.categoryId !== undefined) {
+      updateData.categoryId = args.updates.categoryId;
+    }
+    if (args.updates.date !== undefined) {
+      updateData.date = args.updates.date;
+    }
+    if (args.updates.amount !== undefined) {
+      updateData.amount = args.updates.amount;
+    }
+
+    // Update all transactions
+    await Promise.all(
+      transactions.map(async (transaction) => {
+        await ctx.db.patch(transaction._id, updateData);
+      }),
+    );
+
+    // Fetch updated transactions with details
+    const updatedTransactions = await Promise.all(
+      args.transactionIds.map(async (id) => {
+        const transaction = (await ctx.db.get(id)) as Doc<'transaction'>;
+        const details: TransactionWithDetails = { ...transaction };
+
+        // Populate merchant
+        if (transaction.merchantId) {
+          const merchant = await ctx.db.get(transaction.merchantId);
+          if (merchant) {
+            let merchantName = merchant.name;
+            let merchantLogoUrl = merchant.logoUrl ?? undefined;
+
+            if (merchant.globalMerchantId && !merchantName) {
+              const globalMerchant = await ctx.db.get(merchant.globalMerchantId);
+              if (globalMerchant) {
+                merchantName = globalMerchant.name;
+                if (!merchantLogoUrl) {
+                  merchantLogoUrl = globalMerchant.logoUrl;
+                }
+              }
+            }
+
+            details.merchant = {
+              _id: merchant._id,
+              name: merchantName || 'Unknown Merchant',
+              logoUrl: merchantLogoUrl,
+            };
+          }
+        }
+
+        // Populate category
+        if (transaction.categoryId) {
+          const category = await ctx.db.get(transaction.categoryId);
+          if (category) {
+            details.category = {
+              _id: category._id,
+              name: category.name,
+              iconName: category.iconName,
+            };
+          }
+        }
+
+        // Populate bank account
+        const bankAccount = (await ctx.db.get(
+          transaction.bankAccountId,
+        )) as Doc<'bankAccount'> | null;
+        if (bankAccount) {
+          details.bankAccount = {
+            _id: bankAccount._id,
+            name: bankAccount.name,
+            accountType: bankAccount.accountType,
+          };
+        }
+
+        return details;
+      }),
+    );
+
+    return {
+      success: true,
+      updatedCount: updatedTransactions.length,
+      transactions: updatedTransactions,
+    };
   },
 });

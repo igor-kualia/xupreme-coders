@@ -22,14 +22,17 @@ import {
   CategoryChartCommand,
   ChatCommandData,
   isCategoryChartCommand,
+  isTransactionEditPreviewCommand,
   isTransactionTableCommand,
   parseMessageCommands,
   ChatMessageSegment,
+  TransactionEditPreviewCommand,
   TransactionTableCommand,
 } from '../../types/chat-commands';
 import { ChatTransactionTableComponent } from './chat-transaction-table.component';
 import { ChatCategoryChartComponent } from './chat-category-chart.component';
 import { ChatBankAccountTableComponent } from './chat-bank-account-table.component';
+import { ChatTransactionEditPreviewComponent } from './chat-transaction-edit-preview.component';
 
 @Component({
   selector: 'app-chat',
@@ -40,6 +43,7 @@ import { ChatBankAccountTableComponent } from './chat-bank-account-table.compone
     ChatTransactionTableComponent,
     ChatCategoryChartComponent,
     ChatBankAccountTableComponent,
+    ChatTransactionEditPreviewComponent,
   ],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.css',
@@ -436,6 +440,11 @@ export class ChatComponent {
   isCategoryChartCommand = isCategoryChartCommand;
 
   /**
+   * Type guard for transaction edit preview command
+   */
+  isTransactionEditPreviewCommand = isTransactionEditPreviewCommand;
+
+  /**
    * Cast command data to TransactionTableCommand
    */
   asTransactionTableCommand(data: ChatCommandData): TransactionTableCommand {
@@ -454,5 +463,12 @@ export class ChatComponent {
    */
   asBankAccountTableCommand(data: ChatCommandData): BankAccountTableCommand {
     return data as BankAccountTableCommand;
+  }
+
+  /**
+   * Cast command data to TransactionEditPreviewCommand
+   */
+  asTransactionEditPreviewCommand(data: ChatCommandData): TransactionEditPreviewCommand {
+    return data as TransactionEditPreviewCommand;
   }
 }

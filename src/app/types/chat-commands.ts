@@ -5,7 +5,11 @@
  * Example: [RENDER:transaction-table:{"transactionIds":["id1","id2"]}]
  */
 
-export type ChatCommandType = 'transaction-table' | 'category-chart' | 'bank-account-table';
+export type ChatCommandType =
+  | 'transaction-table'
+  | 'category-chart'
+  | 'bank-account-table'
+  | 'transaction-edit-preview';
 
 export interface TransactionTableCommand {
   transactionIds: string[];
@@ -23,10 +27,21 @@ export interface BankAccountTableCommand {
   accountIds: string[];
 }
 
+export interface TransactionEditPreviewCommand {
+  transactionIds: string[];
+  updates: {
+    categoryId?: string;
+    categoryName?: string;
+    date?: string;
+    amount?: number;
+  };
+}
+
 export type ChatCommandData =
   | TransactionTableCommand
   | CategoryChartCommand
-  | BankAccountTableCommand;
+  | BankAccountTableCommand
+  | TransactionEditPreviewCommand;
 
 export interface ChatCommand {
   type: ChatCommandType;
@@ -63,6 +78,16 @@ export function isBankAccountTableCommand(
   return type === 'bank-account-table';
 }
 
+/**
+ * Type guard to check if command data is TransactionEditPreviewCommand
+ */
+export function isTransactionEditPreviewCommand(
+  type: ChatCommandType,
+  data: ChatCommandData,
+): data is TransactionEditPreviewCommand {
+  return type === 'transaction-edit-preview';
+}
+
 export interface ChatMessageSegment {
   type: 'text' | 'component';
   content: string;
@@ -72,8 +97,9 @@ export interface ChatMessageSegment {
 /**
  * Regular expression to match command markers in message content
  * Format: [RENDER:component-type:json-data]
+ * Note: Simple pattern to find command starts, we parse JSON manually to handle nesting
  */
-export const COMMAND_PATTERN = /\[RENDER:([^:]+):(\{[^}]+\})\]/g;
+export const COMMAND_PATTERN = /\[RENDER:([^:]+):/g;
 
 /**
  * Parses message content and extracts command markers
@@ -87,35 +113,89 @@ export function parseMessageCommands(content: string): ChatMessageSegment[] {
   const matches = content.matchAll(COMMAND_PATTERN);
 
   for (const match of matches) {
-    const [fullMatch, commandType, jsonData] = match;
+    const [, commandType] = match;
     const matchIndex = match.index!;
+    const commandStart = matchIndex;
+    const jsonStart = matchIndex + match[0].length;
 
-    if (matchIndex > lastIndex) {
-      segments.push({
-        type: 'text',
-        content: content.slice(lastIndex, matchIndex),
-      });
+    // Find the JSON object by counting braces
+    let braceCount = 0;
+    let jsonEnd = jsonStart;
+    let inString = false;
+    let escapeNext = false;
+
+    for (let i = jsonStart; i < content.length; i++) {
+      const char = content[i];
+
+      if (escapeNext) {
+        escapeNext = false;
+        continue;
+      }
+
+      if (char === '\\') {
+        escapeNext = true;
+        continue;
+      }
+
+      if (char === '"') {
+        inString = !inString;
+        continue;
+      }
+
+      if (!inString) {
+        if (char === '{') {
+          braceCount++;
+        } else if (char === '}') {
+          braceCount--;
+          if (braceCount === 0) {
+            jsonEnd = i + 1;
+            break;
+          }
+        }
+      }
     }
 
-    try {
-      const data = JSON.parse(jsonData);
-      segments.push({
-        type: 'component',
-        content: fullMatch,
-        command: {
-          type: commandType as ChatCommandType,
-          data,
-        },
-      });
-    } catch (error) {
-      console.error('Failed to parse command data:', error);
-      segments.push({
-        type: 'text',
-        content: fullMatch,
-      });
-    }
+    // Check if we found a complete JSON object followed by ]
+    if (braceCount === 0 && content[jsonEnd] === ']') {
+      const fullMatch = content.slice(commandStart, jsonEnd + 1);
+      const jsonData = content.slice(jsonStart, jsonEnd);
 
-    lastIndex = matchIndex + fullMatch.length;
+      if (matchIndex > lastIndex) {
+        segments.push({
+          type: 'text',
+          content: content.slice(lastIndex, matchIndex),
+        });
+      }
+
+      try {
+        const data = JSON.parse(jsonData);
+        segments.push({
+          type: 'component',
+          content: fullMatch,
+          command: {
+            type: commandType as ChatCommandType,
+            data,
+          },
+        });
+      } catch (error) {
+        console.error('Failed to parse command data:', error);
+        segments.push({
+          type: 'text',
+          content: fullMatch,
+        });
+      }
+
+      lastIndex = jsonEnd + 1;
+    } else {
+      // Invalid command format, treat as text
+      if (matchIndex > lastIndex) {
+        segments.push({
+          type: 'text',
+          content: content.slice(lastIndex, matchIndex),
+        });
+      }
+      lastIndex = matchIndex;
+    }
   }
 
   if (lastIndex < content.length) {

@@ -234,11 +234,21 @@ export const generateDummyTransactions = internalMutation({
         transactionsStatus: 'completed',
       });
 
-      // Seed user categories first (if they don't exist)
-      console.log('Seeding user categories...');
-      await ctx.scheduler.runAfter(0, internal.internal.seedUserCategories.seedUserCategories, {
-        userId,
-      });
+      // Check if user already has categories before seeding
+      const existingCategoryGroups = await ctx.db
+        .query('categoryGroup')
+        .withIndex('by_userId', (q) => q.eq('userId', userId))
+        .first();
+
+      // Only seed categories if they don't exist
+      if (!existingCategoryGroups) {
+        console.log('Seeding user categories...');
+        await ctx.scheduler.runAfter(0, internal.internal.seedUserCategories.seedUserCategories, {
+          userId,
+        });
+      } else {
+        console.log('User already has categories, skipping seed...');
+      }
 
       // Trigger LLM categorization for the generated transactions (after a short delay to ensure categories are created)
       console.log('Scheduling LLM categorization...');

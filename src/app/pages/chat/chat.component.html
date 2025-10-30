@@ -125,6 +125,13 @@
                         <app-chat-bank-account-table
                           [accountIds]="asBankAccountTableCommand(segment.command.data).accountIds"
                         />
+                      } @else if (segment.command.type === 'transaction-edit-preview') {
+                        <app-chat-transaction-edit-preview
+                          [transactionIds]="
+                            asTransactionEditPreviewCommand(segment.command.data).transactionIds
+                          "
+                          [updates]="asTransactionEditPreviewCommand(segment.command.data).updates"
+                        />
                       }
                     }
                   }
