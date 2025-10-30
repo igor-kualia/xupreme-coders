@@ -20,6 +20,9 @@
             ],
             "styles": [
               "src/styles.css"
+            ],
+            "scripts": [
+              "node_modules/@lottiefiles/lottie-player/dist/lottie-player.js"
             ]
           },
           "configurations": {
@@ -76,6 +79,9 @@
             ],
             "styles": [
               "src/styles.css"
+            ],
+            "scripts": [
+              "node_modules/@lottiefiles/lottie-player/dist/lottie-player.js"
             ]
           }
         },
@@ -141,6 +147,7 @@
       "@cypress/schematic",
       "angular-eslint",
       "@schematics/angular"
-    ]
+    ],
+    "analytics": false
   }
 }

@@ -1,4 +1,4 @@
-<div class="flex h-[calc(100vh-4rem-1px)] flex-col">
+<div class="flex h-[calc(100vh-4rem-1px)] flex-col bg-gray-50">
   <div #messagesContainer class="flex flex-1 flex-col-reverse overflow-y-auto px-4 py-6">
     @if (!isConversationLoaded()) {
       <div class="flex h-full items-center justify-center">
@@ -16,10 +16,10 @@
         </div>
       </div>
     } @else if (messages().length === 0) {
-      <div class="flex h-full items-center justify-center">
+      <div class="flex flex-col h-full items-center justify-center">
+        <lottie-player src="assets/lottie-chat.json" background="transparent" speed="1" class="w-40 h-40" loop autoplay></lottie-player>
         <div class="text-center">
-          <div class="mb-4 text-6xl">💬</div>
-          <h2 class="text-foreground mb-2 text-xl font-semibold">Start a conversation</h2>
+          <h2 class="text-slate-900 mb-2 text-xl font-semibold ">Start a conversation</h2>
           <p class="text-muted-foreground">
             Ask me anything about your finances, transactions, or spending habits.
           </p>
@@ -29,21 +29,21 @@
               <button
                 type="button"
                 (click)="sendQuickMessage('How much did I spend on groceries this month?')"
-                class="border-border bg-card text-foreground hover:bg-accent block w-full rounded-lg border px-4 py-3 text-left text-sm"
+                class="border-border bg-card text-slate-900 hover:bg-accent block w-full cursor-pointer rounded-lg border px-4 py-3 text-left text-sm"
               >
                 "How much did I spend on groceries this month?"
               </button>
               <button
                 type="button"
                 (click)="sendQuickMessage('Show me my top 5 expenses')"
-                class="border-border bg-card text-foreground hover:bg-accent block w-full rounded-lg border px-4 py-3 text-left text-sm"
+                class="border-border bg-card text-slate-900 hover:bg-accent block w-full cursor-pointer rounded-lg border px-4 py-3 text-left text-sm"
               >
                 "Show me my top 5 expenses"
               </button>
               <button
                 type="button"
                 (click)="sendQuickMessage('What are my spending trends this year?')"
-                class="border-border bg-card text-foreground hover:bg-accent block w-full rounded-lg border px-4 py-3 text-left text-sm"
+                class="border-border bg-card text-slate-900 hover:bg-accent block w-full cursor-pointer rounded-lg border px-4 py-3 text-left text-sm"
               >
                 "What are my spending trends this year?"
               </button>
@@ -113,7 +113,7 @@
   </div>
 
   <!-- Input Area -->
-  <div class="bg-background px-4 py-4">
+  <div class="bg-gray-50 px-4 py-4">
     <div class="mx-auto max-w-3xl">
       @if (error()) {
         <div class="bg-destructive/10 text-destructive mb-3 rounded-lg px-4 py-2 text-sm">
@@ -128,7 +128,7 @@
           type="button"
           (click)="openClearChatDialog(); $event.stopPropagation()"
           [disabled]="messages().length === 0"
-          class="text-muted-foreground hover:text-foreground flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors disabled:pointer-events-none disabled:opacity-30"
+          class="text-muted-foreground hover:text-foreground flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-30"
           title="New conversation"
         >
           <ng-icon name="lucidePlus" size="16" />
@@ -147,7 +147,7 @@
           type="button"
           (click)="sendMessage(); $event.stopPropagation()"
           [disabled]="!canSend()"
-          class="bg-primary text-primary-foreground hover:bg-primary/90 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors disabled:pointer-events-none disabled:opacity-50"
+          class="bg-primary text-primary-foreground hover:bg-primary/90 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
         >
           <ng-icon name="lucideArrowUp" size="16" />
         </button>
