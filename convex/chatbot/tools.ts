@@ -7,6 +7,7 @@ import { Id } from '../_generated/dataModel';
 import { internal } from '../_generated/api';
 import { v } from 'convex/values';
 import { formatCurrency, formatDate } from './helpers';
+import { executeAutoCategorizeByMerchant } from './autoCategorize';
 
 /**
  * Tool definition for listing categories
@@ -60,6 +61,7 @@ USE THIS TOOL when users ask about:
 - Specific transactions or expenses (e.g., "top 5 expenses", "my largest purchases", "recent transactions")
 - Transactions at specific merchants (e.g., "what did I buy at Walmart?")
 - Total spending in a specific category (e.g., "how much did I spend on groceries?")
+- Uncategorized transactions (e.g., "show me uncategorized transactions", "what transactions need categorizing?")
 
 DO NOT USE THIS TOOL for category breakdowns or "top spending categories" (use get_category_summary instead).
 
@@ -115,6 +117,11 @@ IMPORTANT: Use list_categories or list_merchants tools first to find the correct
         items: {
           type: 'string',
         },
+      },
+      includeUncategorized: {
+        type: 'boolean',
+        description:
+          'Set to true to filter for ONLY uncategorized transactions (categoryId is null/undefined). Use this when users ask to see transactions that need categorizing.',
       },
       aggregation: {
         type: 'string',
@@ -427,6 +434,51 @@ Apply updates:
 } as const;
 
 /**
+ * Tool definition for autonomously categorizing transactions by merchant
+ */
+export const AUTO_CATEGORIZE_BY_MERCHANT_TOOL = {
+  name: 'auto_categorize_by_merchant',
+  description: `Autonomously categorize ALL uncategorized transactions from a specific merchant. NO user confirmation required.
+
+USE THIS TOOL when users want to:
+- Categorize uncategorized transactions by merchant name
+- Bulk assign categories to all transactions from a merchant
+- Set up automatic categorization rules for merchants
+
+IMPORTANT DISTINCTIONS:
+- Use THIS tool when categorizing UNCATEGORIZED transactions (categoryId is null/undefined)
+- Use propose_transaction_update/confirm_transaction_update when CHANGING existing categories
+
+Examples of when to use this tool:
+- "Categorize all Starbucks as Coffee Shops"
+- "Set all Walmart transactions to Groceries"
+- "Make all Shell purchases Gas & Fuel"
+
+This tool will:
+1. Find the category by name (use list_categories first if needed)
+2. Create or update a merchant-category mapping (cached for future transactions)
+3. Apply the category to ALL uncategorized transactions from that merchant
+4. Return the count of transactions updated
+
+NO CONFIRMATION STEP - This happens immediately.`,
+  input_schema: {
+    type: 'object',
+    properties: {
+      merchantName: {
+        type: 'string',
+        description: 'The merchant name to categorize (e.g., "Starbucks", "Walmart", "Shell")',
+      },
+      categoryName: {
+        type: 'string',
+        description:
+          'The category name to assign. Can be simple name (e.g., "Groceries") or group format (e.g., "[Food & Dining][Coffee Shops]"). Use list_categories to find the exact name.',
+      },
+    },
+    required: ['merchantName', 'categoryName'],
+  },
+} as const;
+
+/**
  * Input type for list categories tool
  */
 export interface ListCategoriesInput {
@@ -456,6 +508,7 @@ export interface QueryTransactionsInput {
   accountIds?: string[];
   categoryIds?: string[];
   merchantIds?: string[];
+  includeUncategorized?: boolean;
   aggregation:
     | 'list'
     | 'sum'
@@ -529,6 +582,14 @@ export interface ConfirmTransactionUpdateInput {
     date?: string;
     amount?: number;
   };
+}
+
+/**
+ * Input type for the auto categorize by merchant tool
+ */
+export interface AutoCategorizeByMerchantInput {
+  merchantName: string;
+  categoryName: string;
 }
 
 /**
@@ -938,11 +999,7 @@ export async function executeConfirmTransactionUpdate(
 ): Promise<string> {
   try {
     // Validate that at least one update is specified
-    if (
-      !input.updates.categoryId &&
-      !input.updates.date &&
-      input.updates.amount === undefined
-    ) {
+    if (!input.updates.categoryId && !input.updates.date && input.updates.amount === undefined) {
       return 'Error: You must specify at least one change (categoryId, date, or amount) in updates.';
     }
 
@@ -1099,6 +1156,13 @@ export async function executeQueryTransactions(
       );
     }
 
+    // Uncategorized filter
+    if (input.includeUncategorized) {
+      filteredTransactions = filteredTransactions.filter(
+        (t) => !t.categoryId || t.categoryId === null || t.categoryId === undefined,
+      );
+    }
+
     // Execute aggregation
     const limit = Math.min(input.limit || 50, 500);
 
@@ -1221,8 +1285,6 @@ async function formatTransactionList(
     }),
   );
 
-  const summary = `Found ${transactions.length} transaction(s)${transactions.length > limit ? ` (showing first ${limit})` : ''}:\n\n${formattedList.join('\n')}`;
-
   // Add command to render transaction table if 3 or more transactions
   if (sortedTransactions.length >= 3) {
     const transactionIds = sortedTransactions
@@ -1238,10 +1300,13 @@ async function formatTransactionList(
 
     if (transactionIds.length > 0) {
       const command = `[RENDER:transaction-table:${JSON.stringify({ transactionIds })}]`;
-      return `${summary}\n\n${command}`;
+      // Return only the table command without text summary
+      return `Found ${transactions.length} transaction(s)${transactions.length > limit ? ` (showing first ${limit})` : ''}:\n\n${command}`;
     }
   }
 
+  // For fewer than 3 transactions, return text summary only
+  const summary = `Found ${transactions.length} transaction(s)${transactions.length > limit ? ` (showing first ${limit})` : ''}:\n\n${formattedList.join('\n')}`;
   return summary;
 }
 
@@ -1384,8 +1449,6 @@ async function formatTopExpenses(
     }),
   );
 
-  const summary = `Top ${expenses.length} Expense(s):\n\n${formatted.join('\n')}`;
-
   // Add command to render transaction table if 3 or more transactions
   if (expenses.length >= 3) {
     const transactionIds = expenses
@@ -1400,10 +1463,13 @@ async function formatTopExpenses(
 
     if (transactionIds.length > 0) {
       const command = `[RENDER:transaction-table:${JSON.stringify({ transactionIds })}]`;
-      return `${summary}\n\n${command}`;
+      // Return only the table command without text summary
+      return `Here are your top ${expenses.length} largest expenses this month:\n\n${command}`;
     }
   }
 
+  // For fewer than 3 transactions, return text summary only
+  const summary = `Top ${expenses.length} Expense(s):\n\n${formatted.join('\n')}`;
   return summary;
 }
 
@@ -1434,8 +1500,6 @@ async function formatTopIncome(
     }),
   );
 
-  const summary = `Top ${income.length} Income Transaction(s):\n\n${formatted.join('\n')}`;
-
   // Add command to render transaction table if 3 or more transactions
   if (income.length >= 3) {
     const transactionIds = income
@@ -1450,10 +1514,13 @@ async function formatTopIncome(
 
     if (transactionIds.length > 0) {
       const command = `[RENDER:transaction-table:${JSON.stringify({ transactionIds })}]`;
-      return `${summary}\n\n${command}`;
+      // Return only the table command without text summary
+      return `Here are your top ${income.length} income transactions:\n\n${command}`;
     }
   }
 
+  // For fewer than 3 transactions, return text summary only
+  const summary = `Top ${income.length} Income Transaction(s):\n\n${formatted.join('\n')}`;
   return summary;
 }
 

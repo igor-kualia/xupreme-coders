@@ -376,7 +376,9 @@ export class ChatComponent {
   }
 
   getRenderedMarkdown(content: string): SafeHtml {
-    const html = marked.parse(content, { async: false }) as string;
+    // Trim whitespace and clean up any stray braces
+    const cleanedContent = content.trim();
+    const html = marked.parse(cleanedContent, { async: false }) as string;
     return this.sanitizer.sanitize(1, html) || '';
   }
 

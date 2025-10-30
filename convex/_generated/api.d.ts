@@ -18,6 +18,7 @@ import type * as categorization_helpers from "../categorization/helpers.js";
 import type * as categorization_llm from "../categorization/llm.js";
 import type * as categorization_manualTriggers from "../categorization/manualTriggers.js";
 import type * as categoryAggregation from "../categoryAggregation.js";
+import type * as chatbot_autoCategorize from "../chatbot/autoCategorize.js";
 import type * as chatbot_chatbot from "../chatbot/chatbot.js";
 import type * as chatbot_helpers from "../chatbot/helpers.js";
 import type * as chatbot_llm from "../chatbot/llm.js";
@@ -57,6 +58,7 @@ declare const fullApi: ApiFromModules<{
   "categorization/llm": typeof categorization_llm;
   "categorization/manualTriggers": typeof categorization_manualTriggers;
   categoryAggregation: typeof categoryAggregation;
+  "chatbot/autoCategorize": typeof chatbot_autoCategorize;
   "chatbot/chatbot": typeof chatbot_chatbot;
   "chatbot/helpers": typeof chatbot_helpers;
   "chatbot/llm": typeof chatbot_llm;
