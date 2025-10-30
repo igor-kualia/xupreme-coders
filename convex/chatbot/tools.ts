@@ -2,7 +2,7 @@
  * Tool definitions and execution logic for the chatbot
  */
 
-import { ActionCtx, internalQuery } from '../_generated/server';
+import { ActionCtx, internalMutation, internalQuery } from '../_generated/server';
 import { Id } from '../_generated/dataModel';
 import { internal } from '../_generated/api';
 import { v } from 'convex/values';
@@ -216,6 +216,217 @@ USE THIS TOOL when users ask about:
 } as const;
 
 /**
+ * Tool definition for proposing transaction updates
+ */
+export const PROPOSE_TRANSACTION_UPDATE_TOOL = {
+  name: 'propose_transaction_update',
+  description: `Propose updates to one or more transactions. This is STEP 1 of a TWO-STEP process:
+1. Use this tool to find transactions and show what will be changed (with a preview component)
+2. Ask the user: "Do you want to proceed with these changes? (yes/no)"
+3. Wait for user's text response
+4. If user confirms with "yes", call confirm_transaction_update tool to execute the changes
+
+USE THIS TOOL when users want to:
+- Change the category of transactions (e.g., "change all Starbucks to Coffee category")
+- Update transaction dates (e.g., "change the date of this transaction to 2024-01-15")
+- Correct transaction amounts (e.g., "update the amount to $50.00")
+- Batch update multiple transactions matching criteria
+
+IMPORTANT: After calling this tool, you MUST:
+- Present the preview to the user
+- Ask them explicitly: "Do you want to proceed with these changes? Please respond with yes or no."
+- DO NOT proceed until the user confirms
+- If user says "yes", call confirm_transaction_update with the same parameters
+- If user says "no", acknowledge and do not update anything
+
+Filter transactions by:
+- Specific transaction IDs (most precise)
+- Date range
+- Amount range
+- Category IDs
+- Merchant IDs
+
+Propose updates to:
+- categoryId: New category to assign
+- date: New date in ISO format (YYYY-MM-DD)
+- amount: New amount in cents (negative for expenses, positive for income)`,
+  input_schema: {
+    type: 'object',
+    properties: {
+      transactionIds: {
+        type: 'array',
+        description: 'Specific transaction IDs to update (most precise filter)',
+        items: {
+          type: 'string',
+        },
+      },
+      dateRange: {
+        type: 'object',
+        description: 'Filter transactions by date range (ISO 8601 format)',
+        properties: {
+          startDate: {
+            type: 'string',
+            description: 'Start date in ISO format (e.g., "2024-01-01T00:00:00.000Z")',
+          },
+          endDate: {
+            type: 'string',
+            description: 'End date in ISO format (e.g., "2024-12-31T23:59:59.999Z")',
+          },
+        },
+      },
+      amountRange: {
+        type: 'object',
+        description: 'Filter transactions by amount range (in cents)',
+        properties: {
+          min: {
+            type: 'number',
+            description: 'Minimum amount in cents',
+          },
+          max: {
+            type: 'number',
+            description: 'Maximum amount in cents',
+          },
+        },
+      },
+      categoryIds: {
+        type: 'array',
+        description: 'Filter by specific category IDs',
+        items: {
+          type: 'string',
+        },
+      },
+      merchantIds: {
+        type: 'array',
+        description: 'Filter by specific merchant IDs',
+        items: {
+          type: 'string',
+        },
+      },
+      proposedUpdates: {
+        type: 'object',
+        description: 'The changes to apply to matching transactions',
+        properties: {
+          categoryId: {
+            type: 'string',
+            description: 'New category ID to assign (use list_categories to find ID)',
+          },
+          date: {
+            type: 'string',
+            description: 'New date in ISO format YYYY-MM-DD (e.g., "2024-01-15")',
+          },
+          amount: {
+            type: 'number',
+            description: 'New amount in cents (e.g., -5000 for $50 expense, 10000 for $100 income)',
+          },
+        },
+      },
+    },
+    required: ['proposedUpdates'],
+  },
+} as const;
+
+/**
+ * Tool definition for confirming and executing transaction updates
+ */
+export const CONFIRM_TRANSACTION_UPDATE_TOOL = {
+  name: 'confirm_transaction_update',
+  description: `Execute transaction updates after user confirmation. This is STEP 2 of the transaction update process.
+
+ONLY call this tool after:
+1. You've called propose_transaction_update to show what will change
+2. The user explicitly confirmed with "yes" or similar affirmative response
+
+USE THIS TOOL to execute the actual updates to the transactions.
+
+The parameters should match exactly what you proposed in propose_transaction_update.
+
+Filter transactions by:
+- Specific transaction IDs (most precise - use this if you have the IDs from the proposal)
+- Date range
+- Amount range
+- Category IDs
+- Merchant IDs
+
+Apply updates:
+- categoryId: New category to assign
+- date: New date in ISO format (YYYY-MM-DD)
+- amount: New amount in cents (negative for expenses, positive for income)`,
+  input_schema: {
+    type: 'object',
+    properties: {
+      transactionIds: {
+        type: 'array',
+        description: 'Specific transaction IDs to update (most precise filter)',
+        items: {
+          type: 'string',
+        },
+      },
+      dateRange: {
+        type: 'object',
+        description: 'Filter transactions by date range (ISO 8601 format)',
+        properties: {
+          startDate: {
+            type: 'string',
+            description: 'Start date in ISO format (e.g., "2024-01-01T00:00:00.000Z")',
+          },
+          endDate: {
+            type: 'string',
+            description: 'End date in ISO format (e.g., "2024-12-31T23:59:59.999Z")',
+          },
+        },
+      },
+      amountRange: {
+        type: 'object',
+        description: 'Filter transactions by amount range (in cents)',
+        properties: {
+          min: {
+            type: 'number',
+            description: 'Minimum amount in cents',
+          },
+          max: {
+            type: 'number',
+            description: 'Maximum amount in cents',
+          },
+        },
+      },
+      categoryIds: {
+        type: 'array',
+        description: 'Filter by specific category IDs',
+        items: {
+          type: 'string',
+        },
+      },
+      merchantIds: {
+        type: 'array',
+        description: 'Filter by specific merchant IDs',
+        items: {
+          type: 'string',
+        },
+      },
+      updates: {
+        type: 'object',
+        description: 'The changes to apply to matching transactions',
+        properties: {
+          categoryId: {
+            type: 'string',
+            description: 'New category ID to assign',
+          },
+          date: {
+            type: 'string',
+            description: 'New date in ISO format YYYY-MM-DD (e.g., "2024-01-15")',
+          },
+          amount: {
+            type: 'number',
+            description: 'New amount in cents (e.g., -5000 for $50 expense, 10000 for $100 income)',
+          },
+        },
+      },
+    },
+    required: ['updates'],
+  },
+} as const;
+
+/**
  * Input type for list categories tool
  */
 export interface ListCategoriesInput {
@@ -274,6 +485,50 @@ export interface GetCategorySummaryInput {
  */
 export interface ListBankAccountsInput {
   includeDeleted?: boolean;
+}
+
+/**
+ * Input type for the propose transaction update tool
+ */
+export interface ProposeTransactionUpdateInput {
+  transactionIds?: string[];
+  dateRange?: {
+    startDate?: string;
+    endDate?: string;
+  };
+  amountRange?: {
+    min?: number;
+    max?: number;
+  };
+  categoryIds?: string[];
+  merchantIds?: string[];
+  proposedUpdates: {
+    categoryId?: string;
+    date?: string;
+    amount?: number;
+  };
+}
+
+/**
+ * Input type for the confirm transaction update tool
+ */
+export interface ConfirmTransactionUpdateInput {
+  transactionIds?: string[];
+  dateRange?: {
+    startDate?: string;
+    endDate?: string;
+  };
+  amountRange?: {
+    min?: number;
+    max?: number;
+  };
+  categoryIds?: string[];
+  merchantIds?: string[];
+  updates: {
+    categoryId?: string;
+    date?: string;
+    amount?: number;
+  };
 }
 
 /**
@@ -534,6 +789,251 @@ export async function executeListBankAccounts(
   } catch (error) {
     console.error('Error listing bank accounts:', error);
     return `Error listing bank accounts: ${error instanceof Error ? error.message : 'Unknown error'}`;
+  }
+}
+
+/**
+ * Execute the propose transaction update tool
+ */
+export async function executeProposeTransactionUpdate(
+  ctx: ActionCtx,
+  userId: string,
+  input: ProposeTransactionUpdateInput,
+): Promise<string> {
+  try {
+    // Validate that at least one update is proposed
+    if (
+      !input.proposedUpdates.categoryId &&
+      !input.proposedUpdates.date &&
+      input.proposedUpdates.amount === undefined
+    ) {
+      return 'Error: You must specify at least one change (categoryId, date, or amount) in proposedUpdates.';
+    }
+
+    // Fetch all transactions for the user
+    const allTransactions = await ctx.runQuery(internal.chatbot.tools.getAllTransactions, {
+      userId,
+    });
+
+    // Apply filters
+    let filteredTransactions = allTransactions;
+
+    // Filter by specific transaction IDs (highest priority)
+    if (input.transactionIds && input.transactionIds.length > 0) {
+      filteredTransactions = filteredTransactions.filter((t) =>
+        input.transactionIds!.includes(t._id),
+      );
+    }
+
+    // Date range filter
+    if (input.dateRange?.startDate) {
+      filteredTransactions = filteredTransactions.filter(
+        (t) => t.date >= input.dateRange!.startDate!,
+      );
+    }
+    if (input.dateRange?.endDate) {
+      filteredTransactions = filteredTransactions.filter(
+        (t) => t.date <= input.dateRange!.endDate!,
+      );
+    }
+
+    // Amount range filter
+    if (input.amountRange?.min !== undefined) {
+      filteredTransactions = filteredTransactions.filter(
+        (t) => Number(t.amount) >= input.amountRange!.min!,
+      );
+    }
+    if (input.amountRange?.max !== undefined) {
+      filteredTransactions = filteredTransactions.filter(
+        (t) => Number(t.amount) <= input.amountRange!.max!,
+      );
+    }
+
+    // Category filter
+    if (input.categoryIds && input.categoryIds.length > 0) {
+      filteredTransactions = filteredTransactions.filter((t) =>
+        t.categoryId ? input.categoryIds!.includes(t.categoryId) : false,
+      );
+    }
+
+    // Merchant filter
+    if (input.merchantIds && input.merchantIds.length > 0) {
+      filteredTransactions = filteredTransactions.filter((t) =>
+        t.merchantId ? input.merchantIds!.includes(t.merchantId) : false,
+      );
+    }
+
+    if (filteredTransactions.length === 0) {
+      return 'No transactions found matching the specified criteria. Please adjust your filters and try again.';
+    }
+
+    // Limit to 100 transactions max for safety
+    const MAX_TRANSACTIONS = 100;
+    if (filteredTransactions.length > MAX_TRANSACTIONS) {
+      return `Found ${filteredTransactions.length} transactions, which exceeds the maximum of ${MAX_TRANSACTIONS} that can be updated at once. Please add more specific filters to narrow down the selection.`;
+    }
+
+    // Sort by date (most recent first)
+    const sortedTransactions = filteredTransactions.sort((a, b) => b.date.localeCompare(a.date));
+
+    // Build summary of what will be changed
+    const changeDescriptions: string[] = [];
+    let categoryName: string | undefined;
+    if (input.proposedUpdates.categoryId) {
+      categoryName = await getCategoryNameForAction(ctx, input.proposedUpdates.categoryId);
+      changeDescriptions.push(`Category → ${categoryName}`);
+    }
+    if (input.proposedUpdates.date) {
+      changeDescriptions.push(`Date → ${formatDate(input.proposedUpdates.date)}`);
+    }
+    if (input.proposedUpdates.amount !== undefined) {
+      changeDescriptions.push(`Amount → ${formatCurrency(input.proposedUpdates.amount)}`);
+    }
+
+    // Create a text summary of affected transactions
+    const transactionSummaries = await Promise.all(
+      sortedTransactions.slice(0, 10).map(async (t) => {
+        const merchant = t.merchantId
+          ? await getMerchantNameForAction(ctx, t.merchantId)
+          : 'Unknown';
+        const category = t.categoryId
+          ? await getCategoryNameForAction(ctx, t.categoryId)
+          : 'Uncategorized';
+        return `- ${formatDate(t.date)}: ${merchant} | ${formatCurrency(t.amount)} | ${category}`;
+      }),
+    );
+
+    const showingText =
+      sortedTransactions.length > 10 ? ` (showing first 10 of ${sortedTransactions.length})` : '';
+
+    const summary = `Found ${sortedTransactions.length} transaction(s) to update${showingText}:\n\n${transactionSummaries.join('\n')}\n\nProposed changes:\n${changeDescriptions.map((c) => `- ${c}`).join('\n')}`;
+
+    // Generate RENDER command for preview with category name
+    const transactionIds = sortedTransactions.map((t) => t._id);
+    const renderData = {
+      transactionIds,
+      updates: {
+        categoryId: input.proposedUpdates.categoryId,
+        categoryName: categoryName, // Include the resolved category name
+        date: input.proposedUpdates.date,
+        amount: input.proposedUpdates.amount,
+      },
+    };
+
+    const command = `[RENDER:transaction-edit-preview:${JSON.stringify(renderData)}]`;
+    return `${summary}\n\n${command}`;
+  } catch (error) {
+    console.error('Error proposing transaction update:', error);
+    return `Error proposing transaction update: ${error instanceof Error ? error.message : 'Unknown error'}`;
+  }
+}
+
+/**
+ * Execute the confirm transaction update tool
+ */
+export async function executeConfirmTransactionUpdate(
+  ctx: ActionCtx,
+  userId: string,
+  input: ConfirmTransactionUpdateInput,
+): Promise<string> {
+  try {
+    // Validate that at least one update is specified
+    if (
+      !input.updates.categoryId &&
+      !input.updates.date &&
+      input.updates.amount === undefined
+    ) {
+      return 'Error: You must specify at least one change (categoryId, date, or amount) in updates.';
+    }
+
+    // Fetch all transactions for the user
+    const allTransactions = await ctx.runQuery(internal.chatbot.tools.getAllTransactions, {
+      userId,
+    });
+
+    // Apply filters
+    let filteredTransactions = allTransactions;
+
+    // Filter by specific transaction IDs (highest priority)
+    if (input.transactionIds && input.transactionIds.length > 0) {
+      filteredTransactions = filteredTransactions.filter((t) =>
+        input.transactionIds!.includes(t._id),
+      );
+    }
+
+    // Date range filter
+    if (input.dateRange?.startDate) {
+      filteredTransactions = filteredTransactions.filter(
+        (t) => t.date >= input.dateRange!.startDate!,
+      );
+    }
+    if (input.dateRange?.endDate) {
+      filteredTransactions = filteredTransactions.filter(
+        (t) => t.date <= input.dateRange!.endDate!,
+      );
+    }
+
+    // Amount range filter
+    if (input.amountRange?.min !== undefined) {
+      filteredTransactions = filteredTransactions.filter(
+        (t) => Number(t.amount) >= input.amountRange!.min!,
+      );
+    }
+    if (input.amountRange?.max !== undefined) {
+      filteredTransactions = filteredTransactions.filter(
+        (t) => Number(t.amount) <= input.amountRange!.max!,
+      );
+    }
+
+    // Category filter
+    if (input.categoryIds && input.categoryIds.length > 0) {
+      filteredTransactions = filteredTransactions.filter((t) =>
+        t.categoryId ? input.categoryIds!.includes(t.categoryId) : false,
+      );
+    }
+
+    // Merchant filter
+    if (input.merchantIds && input.merchantIds.length > 0) {
+      filteredTransactions = filteredTransactions.filter((t) =>
+        t.merchantId ? input.merchantIds!.includes(t.merchantId) : false,
+      );
+    }
+
+    if (filteredTransactions.length === 0) {
+      return 'No transactions found matching the specified criteria. No updates were made.';
+    }
+
+    // Limit to 100 transactions max for safety
+    const MAX_TRANSACTIONS = 100;
+    if (filteredTransactions.length > MAX_TRANSACTIONS) {
+      return `Found ${filteredTransactions.length} transactions, which exceeds the maximum of ${MAX_TRANSACTIONS} that can be updated at once. No updates were made. Please add more specific filters to narrow down the selection.`;
+    }
+
+    // Execute the update mutation
+    const transactionIds = filteredTransactions.map((t) => t._id);
+    await ctx.runMutation(internal.chatbot.tools.updateTransactionsBatch, {
+      userId,
+      transactionIds,
+      updates: input.updates,
+    });
+
+    // Build success message
+    const changeDescriptions: string[] = [];
+    if (input.updates.categoryId) {
+      const categoryName = await getCategoryNameForAction(ctx, input.updates.categoryId);
+      changeDescriptions.push(`Category → ${categoryName}`);
+    }
+    if (input.updates.date) {
+      changeDescriptions.push(`Date → ${formatDate(input.updates.date)}`);
+    }
+    if (input.updates.amount !== undefined) {
+      changeDescriptions.push(`Amount → ${formatCurrency(input.updates.amount)}`);
+    }
+
+    return `✓ Successfully updated ${filteredTransactions.length} transaction${filteredTransactions.length === 1 ? '' : 's'}.\n\nChanges applied:\n${changeDescriptions.map((c) => `- ${c}`).join('\n')}`;
+  } catch (error) {
+    console.error('Error confirming transaction update:', error);
+    return `Error updating transactions: ${error instanceof Error ? error.message : 'Unknown error'}. No changes were made.`;
   }
 }
 
@@ -1205,5 +1705,62 @@ export const getAllBankAccounts = internalQuery({
     );
 
     return enriched;
+  },
+});
+
+/**
+ * Internal mutation to update multiple transactions at once
+ */
+export const updateTransactionsBatch = internalMutation({
+  args: {
+    userId: v.string(),
+    transactionIds: v.array(v.string()),
+    updates: v.object({
+      categoryId: v.optional(v.string()),
+      date: v.optional(v.string()),
+      amount: v.optional(v.number()),
+    }),
+  },
+  handler: async (ctx, args) => {
+    // Verify all transactions belong to the user and update them
+    for (const transactionId of args.transactionIds) {
+      const transaction = await ctx.db.get(transactionId as Id<'transaction'>);
+
+      if (!transaction) {
+        console.warn(`Transaction ${transactionId} not found, skipping`);
+        continue;
+      }
+
+      if (transaction.userId !== args.userId) {
+        console.warn(
+          `Transaction ${transactionId} does not belong to user ${args.userId}, skipping`,
+        );
+        continue;
+      }
+
+      // Build update object with only defined fields
+      const updateFields: {
+        categoryId?: Id<'category'>;
+        date?: string;
+        amount?: bigint;
+      } = {};
+
+      if (args.updates.categoryId) {
+        updateFields.categoryId = args.updates.categoryId as Id<'category'>;
+      }
+
+      if (args.updates.date) {
+        updateFields.date = args.updates.date;
+      }
+
+      if (args.updates.amount !== undefined) {
+        updateFields.amount = BigInt(args.updates.amount);
+      }
+
+      // Update the transaction
+      await ctx.db.patch(transactionId as Id<'transaction'>, updateFields);
+    }
+
+    return { updatedCount: args.transactionIds.length };
   },
 });

@@ -4,10 +4,12 @@
 
 import OpenAI from 'openai';
 import {
+  CONFIRM_TRANSACTION_UPDATE_TOOL,
   GET_CATEGORY_SUMMARY_TOOL,
   LIST_BANK_ACCOUNTS_TOOL,
   LIST_CATEGORIES_TOOL,
   LIST_MERCHANTS_TOOL,
+  PROPOSE_TRANSACTION_UPDATE_TOOL,
   QUERY_TRANSACTIONS_TOOL,
 } from './tools';
 
@@ -57,6 +59,8 @@ Available Tools:
 3. query_transactions - Use this to query individual transactions (e.g., "show me my top 5 expenses", "what did I buy at Walmart?", "list my recent transactions")
 4. get_category_summary - Use this to analyze spending BY CATEGORY (e.g., "top spending categories", "category breakdown", "where does my money go?")
 5. list_bank_accounts - Use this to show bank account balances (e.g., "what are my account balances?", "how much money do I have?", "show me my accounts")
+6. propose_transaction_update - Use this to PROPOSE changes to transactions and show a preview (STEP 1 of update process)
+7. confirm_transaction_update - Use this to EXECUTE approved transaction updates (STEP 2 of update process, only call after user confirms)
 
 CRITICAL TOOL SELECTION RULES:
 - When users ask about CATEGORIES or CATEGORY BREAKDOWNS → ALWAYS use get_category_summary (this will show a chart)
@@ -64,6 +68,63 @@ CRITICAL TOOL SELECTION RULES:
 
 - When users ask about SPECIFIC TRANSACTIONS or EXPENSES → use query_transactions (this will show a table)
   Examples: "top 5 expenses", "my largest purchases", "show me transactions", "what did I spend at Target"
+
+- When users want to EDIT or CHANGE transactions → use propose_transaction_update then wait for confirmation
+  Examples: "change this transaction to Groceries category", "update the date to March 15", "change all Starbucks to Coffee"
+  IMPORTANT: This is a TWO-STEP process requiring text-based confirmation from the user
+
+TRANSACTION EDITING WORKFLOW (TWO-STEP PROCESS):
+
+STEP 1 - PROPOSE CHANGES:
+1. When a user wants to edit transactions, first identify which transactions to update:
+   - If they mention specific transactions, you may need to use query_transactions first to find transaction IDs
+   - If they mention a merchant (e.g., "all Starbucks"), use list_merchants to get the merchant ID
+   - If they mention a category filter, use list_categories to get the category ID
+
+2. For the new category (if changing category), use list_categories to find the correct category ID
+
+3. Call propose_transaction_update with:
+   - Filters to find the transactions (transactionIds, merchantIds, categoryIds, dateRange, amountRange)
+   - proposedUpdates with the new values (categoryId, date, and/or amount)
+
+4. The tool will return a preview component showing:
+   - The transactions that will be affected
+   - What changes will be made
+
+5. After the preview, you MUST ask the user to confirm:
+   - Use EXACT wording: "Do you want to proceed with these changes? Please respond with yes or no."
+   - DO NOT proceed until the user responds
+   - DO NOT call any other tools while waiting for confirmation
+
+STEP 2 - EXECUTE AFTER CONFIRMATION:
+6. When the user responds with "yes" or affirmative:
+   - Call confirm_transaction_update with the EXACT SAME parameters you used in propose_transaction_update
+   - The tool will execute the updates and return a success message
+   - Acknowledge the successful update to the user
+
+7. If the user responds with "no" or rejects:
+   - Acknowledge that no changes were made
+   - Ask if they'd like to modify the request or do something else
+   - DO NOT call confirm_transaction_update
+
+Example Transaction Update Flow:
+User: "Change all my Starbucks transactions to the Coffee category"
+1. Call list_merchants with searchTerm: "Starbucks" → get merchant ID: "merchant_123"
+2. Call list_categories with searchTerm: "Coffee" → get category ID: "category_456"
+3. Call propose_transaction_update with:
+   {
+     merchantIds: ["merchant_123"],
+     proposedUpdates: { categoryId: "category_456" }
+   }
+4. System shows preview component in chat
+5. Assistant responds: "I found 5 Starbucks transactions that will be updated to the Coffee category. [preview shown above] Do you want to proceed with these changes? Please respond with yes or no."
+6. User responds: "yes"
+7. Call confirm_transaction_update with same parameters:
+   {
+     merchantIds: ["merchant_123"],
+     updates: { categoryId: "category_456" }
+   }
+8. Respond: "✓ Successfully updated 5 transactions to the Coffee category!"
 
 Guidelines:
 - Be concise and friendly in your responses
@@ -112,6 +173,30 @@ Example Response with Category Chart:
 [RENDER:category-chart:{"categoryIds":["..."],"chartType":"pie","startDate":"2025-01-01T00:00:00.000Z","endDate":"2025-01-31T23:59:59.999Z","transactionType":"expense"}]
 
 Your top category was Groceries at $450.00. Would you like to see the individual transactions?"
+
+3. Transaction Edit Preview Command (for showing proposed transaction changes):
+[RENDER:transaction-edit-preview:{"transactionIds":["id1","id2"],"updates":{"categoryId":"...","date":"...","amount":...}}]
+
+IMPORTANT: The propose_transaction_update tool automatically generates this command for you. Do NOT manually construct this command.
+
+Usage Guidelines:
+- Use propose_transaction_update tool when users want to edit transactions
+- The tool will automatically return the RENDER command with transaction IDs and proposed updates
+- The system will show a preview component with:
+  * List of affected transactions with current values
+  * Proposed changes highlighted
+  * NO buttons - this is just a preview
+- After showing the preview, you MUST ask: "Do you want to proceed with these changes? Please respond with yes or no."
+- Wait for user's text response ("yes" or "no")
+- If user says "yes", call confirm_transaction_update to execute the changes
+- If user says "no", acknowledge and do not proceed
+
+Example Response with Transaction Edit Preview:
+"I found 5 Starbucks transactions that will be updated to the Coffee category:
+
+[RENDER:transaction-edit-preview:{"transactionIds":["..."],"updates":{"categoryId":"..."}}]
+
+Do you want to proceed with these changes? Please respond with yes or no."
 
 Workflow Examples:
 
@@ -279,6 +364,22 @@ export async function callLLM(
           name: LIST_BANK_ACCOUNTS_TOOL.name,
           description: LIST_BANK_ACCOUNTS_TOOL.description,
           parameters: LIST_BANK_ACCOUNTS_TOOL.input_schema,
+        },
+      },
+      {
+        type: 'function',
+        function: {
+          name: PROPOSE_TRANSACTION_UPDATE_TOOL.name,
+          description: PROPOSE_TRANSACTION_UPDATE_TOOL.description,
+          parameters: PROPOSE_TRANSACTION_UPDATE_TOOL.input_schema,
+        },
+      },
+      {
+        type: 'function',
+        function: {
+          name: CONFIRM_TRANSACTION_UPDATE_TOOL.name,
+          description: CONFIRM_TRANSACTION_UPDATE_TOOL.description,
+          parameters: CONFIRM_TRANSACTION_UPDATE_TOOL.input_schema,
         },
       },
     ],
